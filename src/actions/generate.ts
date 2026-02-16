@@ -2,14 +2,11 @@
 
 import { supabase } from "@/lib/supabase";
 
-// Using flux model from Pollinations (best quality free model)
-const MODEL = "imagen-4";
+// Usando o modelo flux que é o mais estável para anime no Pollinations
+const MODEL = "flux";
 const TIMEOUT_MS = 60000;
-
-// API Key from environment variables
 const API_KEY = process.env.POLLINATIONS_API_KEY;
 
-// Character detailed prompts
 const CHARACTERS: Record<string, string> = {
   goku: "Son Goku from Dragon Ball Z, Super Saiyan hair, orange martial arts gi, muscular build, intense gaze, anime masterpiece",
   naruto: "Naruto Uzumaki from Naruto Shippuden, blonde spiky hair, whisker marks on face, orange and black ninja outfit, headband, energetic expression",
@@ -23,7 +20,6 @@ const CHARACTERS: Record<string, string> = {
   vegeta: "Vegeta from Dragon Ball, Saiyan battle armor, spiky vertical hair, arms crossed, prideful smirk, blue energy aura",
 };
 
-// Style modifiers
 const STYLES: Record<string, string> = {
   flux: "high quality anime art, detailed shading, vibrant colors, 8k resolution, cinematic composition",
   realistic: "realistic cosplay photo, live action movie adoption, detailed skin texture, cinematic lighting, 85mm lens, photorealistic",
@@ -38,31 +34,28 @@ const STYLES: Record<string, string> = {
 export async function generateImage(characterId: string, styleId: string, customPrompt?: string, width: number = 768, height: number = 1024) {
   const characterPrompt = CHARACTERS[characterId] || CHARACTERS.goku;
   const styleModifier = STYLES[styleId] || STYLES.flux;
-
-  // Combine prompts
   const finalPrompt = `masterpiece, best quality, ${characterPrompt}, ${styleModifier}, ${customPrompt ? customPrompt + ',' : ''} looking at viewer, detailed face`;
-
   const encodedPrompt = encodeURIComponent(finalPrompt);
   const seed = Math.floor(Math.random() * 1000000);
-
-  // Build URL with flux model
   const url = `https://gen.pollinations.ai/image/${encodedPrompt}?model=${MODEL}&seed=${seed}&width=${width}&height=${height}&nologo=true`;
 
-  console.log(`Generating: ${characterId} in ${styleId} style`);
+  console.log(`[ACTION] Iniciando geração: ${characterId} | Modelo: ${MODEL}`);
 
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
-    const response = await fetch(url, {
+    const fetchOptions: RequestInit = {
       method: "GET",
-      headers: {
-        "Authorization": `Bearer ${API_KEY}`,
-      },
       cache: "no-store",
       signal: controller.signal,
-    });
+    };
 
+    if (API_KEY) {
+      fetchOptions.headers = { "Authorization": `Bearer ${API_KEY}` };
+    }
+
+    const response = await fetch(url, fetchOptions);
     clearTimeout(timeoutId);
 
     if (!response.ok) {
@@ -73,47 +66,33 @@ export async function generateImage(characterId: string, styleId: string, custom
     if (contentType?.includes("image")) {
       const arrayBuffer = await response.arrayBuffer();
       const buffer = Buffer.from(arrayBuffer);
+      const base64 = buffer.toString("base64");
+      const dataUrl = `data:image/jpeg;base64,${base64}`;
 
-      // --- SUPABASE UPLOAD ---
-      const fileName = `${characterId}-${Date.now()}.jpg`;
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('gallery')
-        .upload(fileName, buffer, {
-          contentType: 'image/jpeg',
-          cacheControl: '3600',
-          upsert: false
-        });
+      try {
+        const fileName = `${characterId}-${Date.now()}.jpg`;
+        const { error: uploadError } = await supabase.storage
+          .from('gallery')
+          .upload(fileName, buffer, { contentType: 'image/jpeg' });
 
-      if (uploadError) {
-        console.error("Upload Error:", uploadError);
-        // Fallback to dataUrl even if upload fails
-        const base64 = buffer.toString("base64");
-        return { success: true, imageUrl: `data:image/jpeg;base64,${base64}`, prompt: finalPrompt };
-      }
+        if (!uploadError) {
+          const { data: { publicUrl } } = supabase.storage.from('gallery').getPublicUrl(fileName);
+          await supabase.from('generations').insert({
+            image_url: publicUrl,
+            character_id: characterId,
+            style_id: styleId,
+            prompt: finalPrompt
+          });
+          return { success: true, imageUrl: publicUrl, prompt: finalPrompt };
+        }
+      } catch (e) { }
 
-      const { data: { publicUrl } } = supabase.storage
-        .from('gallery')
-        .getPublicUrl(fileName);
-
-      // --- SAVE TO DATABASE ---
-      const { error: dbError } = await supabase
-        .from('generations')
-        .insert({
-          image_url: publicUrl,
-          character_id: characterId,
-          style_id: styleId,
-          prompt: customPrompt || null
-        });
-
-      if (dbError) console.error("Database Error:", dbError);
-
-      return { success: true, imageUrl: publicUrl, prompt: finalPrompt };
+      return { success: true, imageUrl: dataUrl, prompt: finalPrompt };
     }
 
-    return { success: false, error: "Formato de resposta inválido" };
+    return { success: false, error: "Formato inválido" };
 
   } catch (error) {
-    console.error("Generate Error:", error);
     return { success: false, error: "Falha na conexão" };
   }
 }

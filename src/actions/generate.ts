@@ -39,18 +39,24 @@ async function getDynamicPrompt(characterLabel: string, styleLabel: string, cust
   const userRequest = `Personagem: ${characterLabel}. Estilo: ${styleLabel}. Detalhes extras: ${customDetails || 'Crie uma cena épica aleatória'}.`;
 
   try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10000);
+
     const response = await fetch("https://text.pollinations.ai/", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      signal: controller.signal,
       body: JSON.stringify({
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: userRequest }
         ],
         model: "openai",
-        seed: Math.floor(Math.random() * 1000000) // Garante unicidade
+        seed: Math.floor(Math.random() * 1000000)
       })
     });
+
+    clearTimeout(timeout);
 
     if (response.ok) {
       const text = await response.text();

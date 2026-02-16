@@ -57,7 +57,7 @@ export function Gallery({ images, onRemove, onSelect }: GalleryProps) {
                                     className="object-cover transition-transform duration-300 group-hover:scale-110"
                                 />
 
-                                // Overlay
+                                {/* Overlay */}
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity p-2 flex flex-col justify-end">
                                     <div className="flex flex-wrap items-center justify-center gap-2">
                                         <Button

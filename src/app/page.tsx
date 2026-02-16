@@ -44,14 +44,31 @@ export default function Home() {
     play("click");
 
     try {
-      // Small delay to simulate AI thinking
-      await new Promise(resolve => setTimeout(resolve, 800));
-
-      const enhanced = `${customPrompt}, ultra detailed, cinematic lighting, dramatic atmosphere, masterpiece, 8k resolution, highly intricate details`;
-      setCustomPrompt(enhanced);
-      play("success");
+      const res = await fetch("https://text.pollinations.ai/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messages: [
+            { role: "system", content: "Você é um especialista em prompts para IA de imagem. Receba um prompt curto e retorne uma versão melhorada, mais detalhada e criativa, em inglês. Retorne APENAS o texto do prompt melhorado sem explicações." },
+            { role: "user", content: customPrompt }
+          ],
+          model: "openai",
+          seed: Math.floor(Math.random() * 999999)
+        })
+      });
+      if (res.ok) {
+        const enhanced = await res.text();
+        setCustomPrompt(enhanced.trim());
+        play("success");
+      } else {
+        const fallback = `${customPrompt}, ultra detailed, cinematic lighting, dramatic atmosphere, masterpiece, 8k resolution`;
+        setCustomPrompt(fallback);
+        play("success");
+      }
     } catch (err) {
       console.error(err);
+      const fallback = `${customPrompt}, ultra detailed, cinematic lighting, dramatic atmosphere, masterpiece, 8k resolution`;
+      setCustomPrompt(fallback);
     } finally {
       setIsEnhancing(false);
     }
@@ -448,13 +465,17 @@ export default function Home() {
 
             {/* Footer Note */}
             <p className="mt-6 text-xs text-white/20 font-mono">
-              POWERED BY POLLINATIONS.AI • FLUX MODEL
+              POWERED BY POLLINATIONS.AI • IMAGEN-4 + GPT-4o
             </p>
           </motion.div>
 
           {/* Gallery Section */}
           <div className="col-span-1 lg:col-span-12 w-full">
-            <Gallery images={images} onRemove={removeImage} onSelect={setGeneratedImage} />
+            <Gallery images={images} onRemove={removeImage} onSelect={(url) => {
+              setGeneratedImage(url);
+              const item = images.find(img => img.url === url);
+              if (item?.prompt) setCurrentPrompt(item.prompt);
+            }} />
           </div>
 
         </div>
@@ -494,7 +515,7 @@ export default function Home() {
 
           <div className="max-w-md mx-auto">
             <p className="text-white/10 text-[9px] leading-relaxed uppercase tracking-tighter">
-              Utilizando o modelo FLUX via Pollinations API. Todas as imagens são geradas por inteligência artificial.
+              Utilizando Imagen-4 + GPT-4o via Pollinations API. Todas as imagens são geradas por inteligência artificial.
               Respeite os termos de uso da plataforma.
             </p>
           </div>

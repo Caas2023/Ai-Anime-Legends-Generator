@@ -5,10 +5,10 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Anime Legends Generator — Crie Arte Anime com IA",
-  description: "Gere artes incríveis dos seus personagens favoritos de anime usando inteligência artificial. Escolha entre Goku, Naruto, Luffy e mais, com estilos únicos como Realista, Cyberpunk e Mangá.",
+  title: "Ai Anime Legends Generator — Crie Arte com IA",
+  description: "Crie lendas com IA. Escolha seu personagem, defina o estilo e deixe o Anime Legends Generator criar uma obra-prima.",
   openGraph: {
-    title: "Anime Legends Generator",
+    title: "Ai Anime Legends Generator",
     description: "Crie arte anime épica com IA. Escolha seu personagem, defina o estilo e deixe a IA criar uma obra-prima.",
     type: "website",
     locale: "pt_BR",

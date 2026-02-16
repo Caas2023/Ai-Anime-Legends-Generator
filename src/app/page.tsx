@@ -44,21 +44,22 @@ export default function Home() {
     play("click");
 
     try {
-      const res = await fetch("https://text.pollinations.ai/", {
+      const res = await fetch("https://gen.pollinations.ai/v1/chat/completions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          model: "openai",
           messages: [
             { role: "system", content: "Você é um especialista em prompts para IA de imagem. Receba um prompt curto e retorne uma versão melhorada, mais detalhada e criativa, em inglês. Retorne APENAS o texto do prompt melhorado sem explicações." },
             { role: "user", content: customPrompt }
           ],
-          model: "openai",
           seed: Math.floor(Math.random() * 999999)
         })
       });
       if (res.ok) {
-        const enhanced = await res.text();
-        setCustomPrompt(enhanced.trim());
+        const json = await res.json();
+        const enhanced = json?.choices?.[0]?.message?.content?.trim() || customPrompt;
+        setCustomPrompt(enhanced);
         play("success");
       } else {
         const fallback = `${customPrompt}, ultra detailed, cinematic lighting, dramatic atmosphere, masterpiece, 8k resolution`;
@@ -165,8 +166,8 @@ export default function Home() {
             <Sparkles className="w-4 h-4 text-cyan-400 mr-2" />
             <span className="text-xs font-bold tracking-widest uppercase text-white/90">Anime Legends Generator</span>
           </div>
-          <h1 className="text-4xl md:text-7xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-white via-white to-white/40 drop-shadow-2xl">
-            CRIE SUA LENDA
+          <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 drop-shadow-[0_0_15px_rgba(168,85,247,0.5)]">
+            Ai Anime Legends Generator
           </h1>
           <p className="text-base md:text-lg text-muted-foreground/80 max-w-2xl mx-auto font-medium px-4">
             Escolha seu personagem, defina o estilo e deixe a IA criar uma obra-prima.
@@ -464,8 +465,8 @@ export default function Home() {
             )}
 
             {/* Footer Note */}
-            <p className="mt-6 text-xs text-white/20 font-mono">
-              POWERED BY POLLINATIONS.AI • IMAGEN-4 + GPT-4o
+            <p className="mt-8 text-[10px] uppercase font-bold tracking-widest text-white/10">
+              Ai Anime Legends Generator • Powered by Pollinations
             </p>
           </motion.div>
 

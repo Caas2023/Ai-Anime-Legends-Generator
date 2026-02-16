@@ -1,0 +1,19 @@
+PASSO A PASSO PARA RODAR O PROJETO (ANIME PHOTO TRANSFORMER)
+
+1. Este projeto precisa do NODE.JS instalado.
+   - Se voce nao tem, baixe e instale: https://nodejs.org/
+
+2. Apos instalar o Node.js, voce precisa instalar as "dependencias" do projeto.
+   - Eu criei um arquivo para facilitar isso chamado "run_project.bat".
+   - Dê dois cliques no arquivo "run_project.bat" na pasta do projeto.
+
+3. Uma janela preta vai abrir.
+   - Ela vai baixar os arquivos necessarios (pode demorar um pouco).
+   - Quando terminar, ela vai avisar que o servidor esta pronto.
+
+4. Abra seu navegador (Chrome, Edge, etc).
+   - Digite: http://localhost:5000
+
+IMPORTANTE:
+- Eu (o Agente IA) nao consigo rodar esse comando por bloqueio de seguranca do meu ambiente.
+- Voce precisa fazer esse processo manualmente no seu computador.

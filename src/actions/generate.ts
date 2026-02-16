@@ -66,18 +66,13 @@ async function getDynamicPrompt(characterLabel: string, styleLabel: string, cust
             role: "system", content: `You are a creative anime art director who interprets user requests intelligently.
 
 RULES:
-1. The user selects a BASE character and a visual STYLE.
-2. The user may also provide EXTRA instructions — these are the MOST IMPORTANT part.
-3. CRITICAL RULE FOR MULTIPLE CHARACTERS:
-   - If the EXTRA field mentions another character (e.g., "with Goku", "fighting Vegeta", "kissing Hinata"), you MUST include BOTH characters in the scene.
-   - Do NOT merge them into one person.
-   - Do NOT make the base character wear the other's clothes unless explicitly asked.
-   - Example matches:
-     - Base "Naruto" + Extra "with Goku" -> Scene showing Naruto AND Goku standing together.
-     - Base "Zoro" + Extra "fighting Mihawk" -> Action scene with Zoro AND Mihawk clashing swords.
-4. If the Extra is just a style change (e.g., "cyberpunk"), apply it to the base character.
-5. If no EXTRA is given, create a unique and epic random scene.
-6. Output ONLY the English image prompt (max 60 words). No explanations, no warnings, no notes.` },
+1. BASE + STYLE: Start with the selected character and style.
+2. EXTRA INSTRUCTIONS (CRITICAL):
+   - "with X" or "fighting X" -> GENERATE TWO CHARACTERS. (e.g., "Naruto with Goku")
+   - "as X" or "wearing X clothes" -> ONE CHARACTER doing cosplay. (e.g., "Naruto as Goku" = Naruto in orange gi)
+   - "in X place" -> ONE CHARACTER in a specific background. (e.g., "Naruto in Paris")
+3. If no Extra is given, create a unique epic scene.
+4. Output ONLY the English image prompt (max 60 words). No notes.` },
           { role: "user", content: `BASE CHARACTER: ${characterLabel}\nVISUAL STYLE: ${styleLabel}\nEXTRA INSTRUCTIONS: ${customDetails || 'Create a unique epic random scene with this character'}` }
         ],
         seed: Math.floor(Math.random() * 999999)
@@ -94,13 +89,13 @@ RULES:
       text = sanitizePrompt(text);
 
       if (text.length > MAX_PROMPT_LENGTH) text = text.substring(0, MAX_PROMPT_LENGTH);
-      if (text.length > 20) {
+      if (text.length > 10) {
         console.log("[PROMPT] Dinâmico OK:", text.substring(0, 80) + "...");
         return text;
       }
     }
   } catch {
-    console.warn("[PROMPT] IA de texto indisponível, usando fallback.");
+    console.warn("[PROMPT] IA de texto indisponível.");
   }
   return null;
 }
@@ -177,7 +172,7 @@ async function fetchFromPollinations(prompt: string, width: number, height: numb
 // === API RESERVA: AIRFORCE (rate limit: 61s) ===
 async function fetchFromAirforce(prompt: string, width: number, height: number): Promise<{ buffer: Buffer; contentType: string } | null> {
   if (!AIRFORCE_KEY) {
-    console.warn("[AIRFORCE] Chave não configurada.");
+    console.warn("[AIRFORCE ERROR] Chave API não configurada no servidor (verifique as variáveis de ambiente).");
     return null;
   }
 
@@ -185,7 +180,7 @@ async function fetchFromAirforce(prompt: string, width: number, height: number):
   const timeSinceLastCall = now - lastAirforceCall;
   if (timeSinceLastCall < AIRFORCE_COOLDOWN_MS) {
     const waitTime = Math.ceil((AIRFORCE_COOLDOWN_MS - timeSinceLastCall) / 1000);
-    console.warn(`[AIRFORCE] Rate limit: aguardar mais ${waitTime}s.`);
+    console.warn(`[AIRFORCE] Rate limit ativo. Aguarde ${waitTime}s.`);
     return null;
   }
 
@@ -193,7 +188,7 @@ async function fetchFromAirforce(prompt: string, width: number, height: number):
   if (width > height) size = "1024x768";
   else if (height > width) size = "768x1024";
 
-  console.log(`[AIRFORCE] Tentando com plutogen-o1, size=${size}...`);
+  console.log(`[AIRFORCE] Iniciando geração... Modelo: plutogen-o1 | Tamanho: ${size} | Prompt: ${prompt.substring(0, 50)}...`);
 
   try {
     const controller = new AbortController();
@@ -220,35 +215,35 @@ async function fetchFromAirforce(prompt: string, width: number, height: number):
     lastAirforceCall = Date.now();
 
     if (!response.ok) {
-      console.warn(`[AIRFORCE] API retornou: ${response.status}`);
+      console.error(`[AIRFORCE ERROR] Status: ${response.status} | Texto: ${response.statusText}`);
+      try {
+        const errorBody = await response.text();
+        console.error(`[AIRFORCE BODY] ${errorBody.substring(0, 200)}`);
+      } catch { }
       return null;
     }
 
-    // Processa SSE response
     const text = await response.text();
     let imageUrl: string | null = null;
 
-    for (const line of text.split("\n")) {
-      if (line.startsWith("data: ") && line !== "data: [DONE]" && !line.includes("keepalive")) {
-        try {
-          const data = JSON.parse(line.substring(6));
-          if (data?.data?.[0]?.url) { imageUrl = data.data[0].url; break; }
-          if (data?.url) { imageUrl = data.url; break; }
-        } catch { /* SSE line inválida */ }
-      }
+    // Tenta encontrar URL no SSE ou JSON
+    if (text.includes("http")) {
+      const match = text.match(/https?:\/\/[^\s"']+/);
+      if (match) imageUrl = match[0];
     }
 
     if (!imageUrl) {
-      try {
-        const json = JSON.parse(text);
-        imageUrl = json?.data?.[0]?.url || json?.url || null;
-      } catch {
-        console.warn("[AIRFORCE] Formato de resposta não reconhecido.");
+      // Parsing manual linha a linha (fallback)
+      for (const line of text.split("\n")) {
+        if (line.includes("url")) {
+          const match = line.match(/"url"\s*:\s*"([^"]+)"/);
+          if (match) imageUrl = match[1];
+        }
       }
     }
 
     if (imageUrl) {
-      console.log(`[AIRFORCE] Imagem gerada! Baixando...`);
+      console.log(`[AIRFORCE] Sucesso! Baixando imagem de: ${imageUrl}`);
       const imgResponse = await fetch(imageUrl);
       if (imgResponse.ok) {
         const ct = imgResponse.headers.get("content-type") || "image/png";
@@ -257,9 +252,11 @@ async function fetchFromAirforce(prompt: string, width: number, height: number):
       }
     }
 
-    console.warn("[AIRFORCE] Nenhuma URL de imagem encontrada.");
+    console.warn("[AIRFORCE ERROR] Resposta recebida mas nenhuma URL de imagem encontrada.");
+    console.debug(`[AIRFORCE RAW] ${text.substring(0, 100)}...`);
+
   } catch (e: any) {
-    console.warn(`[AIRFORCE] Erro: ${e?.message || e}`);
+    console.error(`[AIRFORCE EXCEPTION] ${e?.message || e}`);
     lastAirforceCall = Date.now();
   }
   return null;

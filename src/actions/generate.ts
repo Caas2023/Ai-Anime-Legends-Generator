@@ -45,13 +45,15 @@ async function getDynamicPrompt(characterLabel: string, styleLabel: string, cust
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 8000);
 
+    // SEM autenticação — a API de texto funciona sem chave (anônimo)
+    // e COM chave ela injeta avisos de depreciação no texto
     const response = await fetch("https://text.pollinations.ai/", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       signal: controller.signal,
       body: JSON.stringify({
         messages: [
-          { role: "system", content: "You are an anime art director. Create a SHORT (max 60 words) unique image prompt. Vary pose, mood, lighting, scene. Output ONLY the English prompt text." },
+          { role: "system", content: "You are an anime art director. Create a SHORT (max 60 words) unique image prompt. Vary pose, mood, lighting, scene. Output ONLY the English prompt text. No warnings, no notes, no explanations." },
           { role: "user", content: `Character: ${characterLabel}. Style: ${styleLabel}. Extra: ${customDetails || 'epic random scene'}.` }
         ],
         model: "openai",
@@ -63,6 +65,10 @@ async function getDynamicPrompt(characterLabel: string, styleLabel: string, cust
 
     if (response.ok) {
       let text = (await response.text()).trim();
+
+      // Remove qualquer aviso/lixo injetado pela API
+      text = sanitizePrompt(text);
+
       if (text.length > MAX_PROMPT_LENGTH) text = text.substring(0, MAX_PROMPT_LENGTH);
       if (text.length > 20) return text;
     }
@@ -70,6 +76,38 @@ async function getDynamicPrompt(characterLabel: string, styleLabel: string, cust
     console.warn("[PROMPT] IA de texto indisponível.");
   }
   return null;
+}
+
+/**
+ * Limpa o prompt removendo avisos, notas e lixo injetado pela API
+ */
+function sanitizePrompt(text: string): string {
+  // Remove blocos que contenham avisos típicos
+  const warningPatterns = [
+    /⚠️[^]*?(?=\n\n|$)/gi,
+    /\*\*IMPORTANT[^]*?(?=\n\n|$)/gi,
+    /Note:.*(?:deprecated|migrate|pollinations|api|service).*$/gim,
+    /Please migrate.*$/gim,
+    /The Pollinations.*$/gim,
+    /Anonymous requests.*$/gim,
+    /https?:\/\/\S+pollinations\S*/gi,
+    /https?:\/\/enter\.pollinations\.\S*/gi,
+  ];
+
+  let cleaned = text;
+  for (const pattern of warningPatterns) {
+    cleaned = cleaned.replace(pattern, "");
+  }
+
+  // Remove linhas vazias extras
+  cleaned = cleaned.replace(/\n{3,}/g, "\n").trim();
+
+  // Remove aspas que envolvam o prompt inteiro
+  if ((cleaned.startsWith('"') && cleaned.endsWith('"')) || (cleaned.startsWith("'") && cleaned.endsWith("'"))) {
+    cleaned = cleaned.slice(1, -1).trim();
+  }
+
+  return cleaned;
 }
 
 // === API PRINCIPAL: POLLINATIONS ===

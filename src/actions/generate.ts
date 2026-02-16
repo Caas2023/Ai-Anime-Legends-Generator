@@ -6,8 +6,8 @@ import { supabase } from "@/lib/supabase";
 const MODEL = "zimage";
 const TIMEOUT_MS = 60000;
 
-// API Key 
-const API_KEY = "sk_CYFcjzBiyuHmEZjq3WoUbtWz2k6CgBPN";
+// API Key from environment variables
+const API_KEY = process.env.POLLINATIONS_API_KEY;
 
 // Character detailed prompts
 const CHARACTERS: Record<string, string> = {

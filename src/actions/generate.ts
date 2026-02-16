@@ -3,7 +3,7 @@
 import { supabase } from "@/lib/supabase";
 
 // Using flux model from Pollinations (best quality free model)
-const MODEL = "flux";
+const MODEL = "zimage";
 const TIMEOUT_MS = 60000;
 
 // API Key 

@@ -2,8 +2,8 @@
 
 import { supabase } from "@/lib/supabase";
 
-// Usando o modelo flux que é o mais estável para anime no Pollinations
-const MODEL = "flux";
+// Usando o modelo imagen-4 (mais recente do Pollinations)
+const MODEL = "imagen-4";
 const TIMEOUT_MS = 60000;
 const API_KEY = process.env.POLLINATIONS_API_KEY;
 
@@ -39,7 +39,7 @@ export async function generateImage(characterId: string, styleId: string, custom
   const seed = Math.floor(Math.random() * 1000000);
   const url = `https://gen.pollinations.ai/image/${encodedPrompt}?model=${MODEL}&seed=${seed}&width=${width}&height=${height}&nologo=true`;
 
-  console.log(`[ACTION] Iniciando geração: ${characterId} | Modelo: ${MODEL}`);
+  console.log(`[ACTION] Gerando: ${characterId} | Modelo: ${MODEL} | Seed: ${seed}`);
 
   try {
     const controller = new AbortController();
@@ -59,7 +59,8 @@ export async function generateImage(characterId: string, styleId: string, custom
     clearTimeout(timeoutId);
 
     if (!response.ok) {
-      return { success: false, error: `Erro na API: ${response.status}` };
+      console.error(`[API ERROR] ${response.status} ${response.statusText}`);
+      return { success: false, error: `Erro na API (${response.status}). Tente novamente.` };
     }
 
     const contentType = response.headers.get("content-type");
@@ -69,6 +70,7 @@ export async function generateImage(characterId: string, styleId: string, custom
       const base64 = buffer.toString("base64");
       const dataUrl = `data:image/jpeg;base64,${base64}`;
 
+      // Supabase upload (non-blocking for the user)
       try {
         const fileName = `${characterId}-${Date.now()}.jpg`;
         const { error: uploadError } = await supabase.storage
@@ -85,14 +87,21 @@ export async function generateImage(characterId: string, styleId: string, custom
           });
           return { success: true, imageUrl: publicUrl, prompt: finalPrompt };
         }
-      } catch (e) { }
+      } catch (e) {
+        console.warn("[SUPABASE LOG]", e);
+      }
 
       return { success: true, imageUrl: dataUrl, prompt: finalPrompt };
     }
 
-    return { success: false, error: "Formato inválido" };
+    console.error(`[FORMAT ERROR] Content-Type: ${contentType}`);
+    return { success: false, error: "A IA não retornou uma imagem. Tente outro personagem." };
 
   } catch (error) {
-    return { success: false, error: "Falha na conexão" };
+    console.error("[FETCH ERROR]", error);
+    if (error instanceof Error && error.name === "AbortError") {
+      return { success: false, error: "Tempo limite excedido. O servidor da IA está lento." };
+    }
+    return { success: false, error: "Falha na conexão com o servidor de IA." };
   }
 }

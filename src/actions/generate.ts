@@ -31,15 +31,56 @@ const STYLES: Record<string, string> = {
   dark: "dark fantasy, gothic horror, heavy shadows, berserk art style, dramatic contrast, grim atmosphere",
 };
 
+/**
+ * Gera um prompt dinâmico e único usando IA de texto
+ */
+async function getDynamicPrompt(characterLabel: string, styleLabel: string, customDetails: string) {
+  const systemPrompt = "Você é um diretor de arte criativo. Sua missão é criar um prompt de imagem detalhado e ÚNICO para um gerador de IA. Cada prompt deve descrever uma cena diferente: mude a pose, o clima, a iluminação e o cenário de fundo. Mantenha o foco em estética anime. Output apenas o texto do prompt em inglês.";
+  const userRequest = `Personagem: ${characterLabel}. Estilo: ${styleLabel}. Detalhes extras: ${customDetails || 'Crie uma cena épica aleatória'}.`;
+
+  try {
+    const response = await fetch("https://text.pollinations.ai/", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userRequest }
+        ],
+        model: "openai",
+        seed: Math.floor(Math.random() * 1000000) // Garante unicidade
+      })
+    });
+
+    if (response.ok) {
+      const text = await response.text();
+      return text.trim();
+    }
+  } catch (error) {
+    console.error("[DYNAMIC PROMPT ERROR]", error);
+  }
+  return null;
+}
+
 export async function generateImage(characterId: string, styleId: string, customPrompt?: string, width: number = 768, height: number = 1024) {
-  const characterPrompt = CHARACTERS[characterId] || CHARACTERS.goku;
-  const styleModifier = STYLES[styleId] || STYLES.flux;
-  const finalPrompt = `masterpiece, best quality, ${characterPrompt}, ${styleModifier}, ${customPrompt ? customPrompt + ',' : ''} looking at viewer, detailed face`;
+  const characterLabel = CHARACTERS[characterId] || characterId;
+  const styleLabel = STYLES[styleId] || styleId;
+
+  console.log(`[ACTION] Gerando imagem dinâmica para ${characterId}...`);
+
+  // Tenta criar um prompt único com a IA de texto
+  let finalPrompt = await getDynamicPrompt(characterLabel, styleLabel, customPrompt || "");
+
+  // Fallback se a IA de texto falhar
+  if (!finalPrompt) {
+    const characterBase = CHARACTERS[characterId] || characterId;
+    const styleBase = STYLES[styleId] || styleId;
+    finalPrompt = `masterpiece, high quality, anime style, ${characterBase}, ${styleBase}, ${customPrompt || ''}, detailed background, cinematic lighting`;
+  }
+
   const encodedPrompt = encodeURIComponent(finalPrompt);
   const seed = Math.floor(Math.random() * 1000000);
   const url = `https://gen.pollinations.ai/image/${encodedPrompt}?model=${MODEL}&seed=${seed}&width=${width}&height=${height}&nologo=true`;
-
-  console.log(`[ACTION] Gerando: ${characterId} | Modelo: ${MODEL} | Seed: ${seed}`);
 
   try {
     const controller = new AbortController();
@@ -59,8 +100,8 @@ export async function generateImage(characterId: string, styleId: string, custom
     clearTimeout(timeoutId);
 
     if (!response.ok) {
-      console.error(`[API ERROR] ${response.status} ${response.statusText}`);
-      return { success: false, error: `Erro na API (${response.status}). Tente novamente.` };
+      console.error(`[API ERROR] ${response.status}`);
+      return { success: false, error: `Erro na API da IA (${response.status}).` };
     }
 
     const contentType = response.headers.get("content-type");
@@ -70,7 +111,6 @@ export async function generateImage(characterId: string, styleId: string, custom
       const base64 = buffer.toString("base64");
       const dataUrl = `data:image/jpeg;base64,${base64}`;
 
-      // Supabase upload (non-blocking for the user)
       try {
         const fileName = `${characterId}-${Date.now()}.jpg`;
         const { error: uploadError } = await supabase.storage
@@ -94,14 +134,13 @@ export async function generateImage(characterId: string, styleId: string, custom
       return { success: true, imageUrl: dataUrl, prompt: finalPrompt };
     }
 
-    console.error(`[FORMAT ERROR] Content-Type: ${contentType}`);
-    return { success: false, error: "A IA não retornou uma imagem. Tente outro personagem." };
+    return { success: false, error: "A IA não retornou uma imagem." };
 
   } catch (error) {
     console.error("[FETCH ERROR]", error);
     if (error instanceof Error && error.name === "AbortError") {
-      return { success: false, error: "Tempo limite excedido. O servidor da IA está lento." };
+      return { success: false, error: "Conexão lenta. Tente novamente." };
     }
-    return { success: false, error: "Falha na conexão com o servidor de IA." };
+    return { success: false, error: "Falha na conexão com a IA." };
   }
 }

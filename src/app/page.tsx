@@ -3,7 +3,7 @@
 import * as React from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { Wand2, Download, RefreshCw, Sparkles, AlertCircle } from "lucide-react";
+import { Wand2, Download, RefreshCw, Sparkles, AlertCircle, Instagram, Facebook, MessageCircle, Share2 } from "lucide-react";
 
 import { CharacterSelector, CHARACTERS } from "@/components/character-selector";
 import { ModelSelector, ART_STYLES } from "@/components/model-selector";
@@ -14,10 +14,20 @@ import { generateImage } from "@/actions/generate";
 import { Gallery } from "@/components/gallery";
 import { useGallery } from "@/hooks/use-gallery";
 import { useSound } from "@/hooks/use-sound";
+import { cn } from "@/lib/utils";
+
+const IMAGE_SIZES = [
+  { id: "portrait", label: "Retrato (3:4)", width: 768, height: 1024, icon: "📱" },
+  { id: "square", label: "Quadrado (1:1)", width: 1024, height: 1024, icon: "🟦" },
+  { id: "landscape", label: "Paisagem (4:3)", width: 1024, height: 768, icon: "🖼️" },
+  { id: "story", label: "Story (9:16)", width: 576, height: 1024, icon: "🤳" },
+  { id: "wide", label: "Wide (16:9)", width: 1024, height: 576, icon: "📺" },
+];
 
 export default function Home() {
   const [selectedCharacter, setSelectedCharacter] = React.useState<string>("goku");
   const [selectedStyle, setSelectedStyle] = React.useState<string>("flux");
+  const [selectedSize, setSelectedSize] = React.useState(IMAGE_SIZES[0]);
   const [customPrompt, setCustomPrompt] = React.useState<string>("");
   const [isEnhancing, setIsEnhancing] = React.useState(false);
   const [generatedImage, setGeneratedImage] = React.useState<string | null>(null);
@@ -25,6 +35,8 @@ export default function Home() {
   const [error, setError] = React.useState<string | null>(null);
   const { play } = useSound();
   const { images, addImage, removeImage } = useGallery();
+
+  const [isMounting, setIsMounting] = React.useState(false); // Just to find where I am
 
   const handleEnhance = async () => {
     if (!customPrompt.trim()) return;
@@ -50,7 +62,7 @@ export default function Home() {
     setIsGenerating(true);
     setGeneratedImage(null);
 
-    const result = await generateImage(selectedCharacter, selectedStyle, customPrompt);
+    const result = await generateImage(selectedCharacter, selectedStyle, customPrompt, selectedSize.width, selectedSize.height);
 
     if (result.success && result.imageUrl) {
       setGeneratedImage(result.imageUrl);
@@ -72,6 +84,37 @@ export default function Home() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  };
+
+  const handleShare = async (platform: 'whatsapp' | 'facebook' | 'general') => {
+    if (!generatedImage) return;
+
+    // For local data URLs, we usually can't share directly via link on social APIs
+    // Best approach is Web Share API for mobile or instructions
+    if (platform === 'general' && navigator.share) {
+      try {
+        const response = await fetch(generatedImage);
+        const blob = await response.blob();
+        const file = new File([blob], 'anime-art.jpg', { type: 'image/jpeg' });
+        await navigator.share({
+          files: [file],
+          title: 'Minha Arte Anime',
+          text: 'Olha que incrível essa arte que eu criei!',
+        });
+      } catch (err) {
+        console.error('Share failed:', err);
+      }
+      return;
+    }
+
+    const text = encodeURIComponent("Olha que incrível essa arte que eu criei no Anime Photo Transformer!");
+    const url = encodeURIComponent(window.location.href);
+
+    if (platform === 'whatsapp') {
+      window.open(`https://wa.me/?text=${text}`, '_blank');
+    } else if (platform === 'facebook') {
+      window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank');
+    }
   };
 
   return (
@@ -142,10 +185,35 @@ export default function Home() {
               />
             </div>
 
+            {/* Size Selection */}
+            <div className="space-y-4">
+              <div className="flex items-center space-x-3">
+                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 text-white text-sm font-bold shadow-lg shadow-purple-500/25">3</div>
+                <h2 className="text-xl font-bold tracking-tight">Tamanho da Imagem</h2>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+                {IMAGE_SIZES.map((size) => (
+                  <Button
+                    key={size.id}
+                    variant={selectedSize.id === size.id ? "default" : "outline"}
+                    className={cn(
+                      "flex flex-col items-center justify-center p-4 h-auto rounded-xl border-white/10 transition-all gap-2",
+                      selectedSize.id === size.id ? "bg-white text-black scale-105" : "bg-white/5 text-white/60 hover:bg-white/10"
+                    )}
+                    onClick={() => { setSelectedSize(size); play("click"); }}
+                    disabled={isGenerating}
+                  >
+                    <span className="text-2xl">{size.icon}</span>
+                    <span className="text-[10px] uppercase tracking-tighter font-bold">{size.label}</span>
+                  </Button>
+                ))}
+              </div>
+            </div>
+
             {/* Custom Prompt Context */}
             <div className="space-y-4">
               <div className="flex items-center space-x-3">
-                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500 to-cyan-600 text-white text-sm font-bold shadow-lg shadow-emerald-500/25">3</div>
+                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500 to-cyan-600 text-white text-sm font-bold shadow-lg shadow-emerald-500/25">4</div>
                 <h2 className="text-xl font-bold tracking-tight">Detalhes Extras</h2>
               </div>
               <div className="relative group">
@@ -249,15 +317,61 @@ export default function Home() {
                   </motion.div>
 
                   {/* Overlay Actions */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-end justify-between p-8">
-                    <div className="text-left">
-                      <p className="text-white font-bold text-lg">{CHARACTERS.find(c => c.id === selectedCharacter)?.label}</p>
-                      <p className="text-white/60 text-sm">{ART_STYLES.find(s => s.id === selectedStyle)?.label}</p>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-end p-6 md:p-10">
+                    <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+                      <div className="text-left">
+                        <p className="text-white font-black text-2xl uppercase tracking-tighter">
+                          {CHARACTERS.find(c => c.id === selectedCharacter)?.label}
+                        </p>
+                        <p className="text-cyan-400/80 text-sm font-bold uppercase tracking-widest flex items-center">
+                          <Sparkles className="w-3 h-3 mr-1" />
+                          {ART_STYLES.find(s => s.id === selectedStyle)?.label}
+                        </p>
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-3">
+                        {/* Download Button */}
+                        <Button
+                          onClick={handleDownload}
+                          variant="gradient"
+                          className="shadow-xl font-bold h-12 px-6"
+                        >
+                          <Download className="w-4 h-4 mr-2" />
+                          BAIXAR HD
+                        </Button>
+
+                        {/* Social Buttons */}
+                        <div className="flex items-center bg-white/10 backdrop-blur-md rounded-xl p-1 border border-white/10">
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-10 w-10 text-green-400 hover:text-green-300 hover:bg-green-500/10"
+                            onClick={() => handleShare('whatsapp')}
+                            title="Compartilhar no WhatsApp"
+                          >
+                            <MessageCircle className="w-5 h-5" />
+                          </Button>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-10 w-10 text-blue-400 hover:text-blue-300 hover:bg-blue-500/10"
+                            onClick={() => handleShare('facebook')}
+                            title="Compartilhar no Facebook"
+                          >
+                            <Facebook className="w-5 h-5" />
+                          </Button>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-10 w-10 text-pink-400 hover:text-pink-300 hover:bg-pink-500/10"
+                            onClick={() => handleShare('general')}
+                            title="Compartilhar no Instagram/Outros"
+                          >
+                            <Instagram className="w-5 h-5" />
+                          </Button>
+                        </div>
+                      </div>
                     </div>
-                    <Button onClick={handleDownload} variant="secondary" className="shadow-lg font-bold">
-                      <Download className="w-4 h-4 mr-2" />
-                      Baixar HD
-                    </Button>
                   </div>
                 </div>
               ) : isGenerating ? (

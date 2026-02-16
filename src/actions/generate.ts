@@ -33,7 +33,7 @@ const STYLES: Record<string, string> = {
   dark: "dark fantasy, gothic horror, heavy shadows, berserk art style, dramatic contrast, grim atmosphere",
 };
 
-export async function generateImage(characterId: string, styleId: string, customPrompt?: string) {
+export async function generateImage(characterId: string, styleId: string, customPrompt?: string, width: number = 768, height: number = 1024) {
   const characterPrompt = CHARACTERS[characterId] || CHARACTERS.goku;
   const styleModifier = STYLES[styleId] || STYLES.flux;
 
@@ -44,7 +44,7 @@ export async function generateImage(characterId: string, styleId: string, custom
   const seed = Math.floor(Math.random() * 1000000);
 
   // Build URL with flux model
-  const url = `https://gen.pollinations.ai/image/${encodedPrompt}?model=${MODEL}&seed=${seed}&width=768&height=1024&nologo=true`;
+  const url = `https://gen.pollinations.ai/image/${encodedPrompt}?model=${MODEL}&seed=${seed}&width=${width}&height=${height}&nologo=true`;
 
   console.log(`Generating: ${characterId} in ${styleId} style`);
   console.log("Prompt:", finalPrompt);

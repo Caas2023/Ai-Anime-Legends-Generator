@@ -3,7 +3,7 @@
 import * as React from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { Wand2, Download, RefreshCw, Sparkles, AlertCircle, Instagram, Facebook, MessageCircle, Share2, Github } from "lucide-react";
+import { Wand2, Download, RefreshCw, Sparkles, AlertCircle, Instagram, Facebook, MessageCircle, Share2, Github, Copy, Check } from "lucide-react";
 
 import { CharacterSelector, CHARACTERS } from "@/components/character-selector";
 import { ModelSelector, ART_STYLES } from "@/components/model-selector";
@@ -31,12 +31,12 @@ export default function Home() {
   const [customPrompt, setCustomPrompt] = React.useState<string>("");
   const [isEnhancing, setIsEnhancing] = React.useState(false);
   const [generatedImage, setGeneratedImage] = React.useState<string | null>(null);
+  const [currentPrompt, setCurrentPrompt] = React.useState<string | null>(null);
+  const [copied, setCopied] = React.useState(false);
   const [isGenerating, setIsGenerating] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const { play } = useSound();
   const { images, addImage, removeImage } = useGallery();
-
-  const [isMounting, setIsMounting] = React.useState(false); // Just to find where I am
 
   const handleEnhance = async () => {
     if (!customPrompt.trim()) return;
@@ -61,12 +61,14 @@ export default function Home() {
     setError(null);
     setIsGenerating(true);
     setGeneratedImage(null);
+    setCurrentPrompt(null);
 
     const result = await generateImage(selectedCharacter, selectedStyle, customPrompt, selectedSize.width, selectedSize.height);
 
     if (result.success && result.imageUrl) {
       setGeneratedImage(result.imageUrl);
-      addImage(result.imageUrl, selectedCharacter, selectedStyle);
+      setCurrentPrompt(result.prompt as string);
+      addImage(result.imageUrl, selectedCharacter, selectedStyle, result.prompt as string);
       play("success");
     } else {
       setError(result.error || "Algo deu errado");
@@ -74,6 +76,13 @@ export default function Home() {
     }
 
     setIsGenerating(false);
+  };
+
+  const handleCopyPrompt = (text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    play("click");
+    setTimeout(() => setCopied(false), 2000);
   };
 
   const handleDownload = () => {
@@ -404,6 +413,38 @@ export default function Home() {
                 </div>
               )}
             </Card>
+
+            {currentPrompt && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="w-full mt-6 p-4 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md relative group max-w-2xl"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest flex items-center">
+                    <Sparkles className="w-3 h-3 mr-2 text-cyan-400" />
+                    Prompt da IA
+                  </span>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-8 px-3 text-[10px] font-bold bg-white/5 hover:bg-white/10 text-white rounded-lg transition-all"
+                    onClick={() => handleCopyPrompt(currentPrompt)}
+                  >
+                    {copied ? (
+                      <><Check className="w-3 h-3 mr-1.5 text-emerald-400" /> COPIADO</>
+                    ) : (
+                      <><Copy className="w-3 h-3 mr-1.5" /> COPIAR PROMPT</>
+                    )}
+                  </Button>
+                </div>
+                <div className="max-h-24 overflow-y-auto pr-2 custom-scrollbar">
+                  <p className="text-xs text-white/60 font-medium leading-relaxed italic">
+                    "{currentPrompt}"
+                  </p>
+                </div>
+              </motion.div>
+            )}
 
             {/* Footer Note */}
             <p className="mt-6 text-xs text-white/20 font-mono">

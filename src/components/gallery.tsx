@@ -3,7 +3,7 @@
 import * as React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
-import { Trash2, Download, Image as ImageIcon, X } from "lucide-react";
+import { Trash2, Download, Image as ImageIcon, X, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { GalleryItem } from "@/hooks/use-gallery";
@@ -57,13 +57,13 @@ export function Gallery({ images, onRemove, onSelect }: GalleryProps) {
                                     className="object-cover transition-transform duration-300 group-hover:scale-110"
                                 />
 
-                                {/* Overlay */}
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity p-3 flex flex-col justify-end">
-                                    <div className="flex justify-between items-end">
+                                // Overlay
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity p-2 flex flex-col justify-end">
+                                    <div className="flex flex-wrap items-center justify-center gap-2">
                                         <Button
                                             size="icon"
                                             variant="destructive"
-                                            className="h-8 w-8 rounded-full shadow-lg"
+                                            className="h-8 w-8 rounded-lg shadow-lg"
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 onRemove(img.id);
@@ -71,10 +71,31 @@ export function Gallery({ images, onRemove, onSelect }: GalleryProps) {
                                         >
                                             <Trash2 className="w-4 h-4" />
                                         </Button>
+
+                                        {img.prompt && (
+                                            <Button
+                                                size="icon"
+                                                variant="ghost"
+                                                className="h-8 w-8 rounded-lg shadow-lg bg-white/10 hover:bg-white/20 text-white"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    navigator.clipboard.writeText(img.prompt);
+                                                    // Simple feedback
+                                                    const btn = e.currentTarget;
+                                                    const originalInner = btn.innerHTML;
+                                                    btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check text-green-400"><path d="M20 6 9 17l-5-5"/></svg>';
+                                                    setTimeout(() => { btn.innerHTML = originalInner; }, 2000);
+                                                }}
+                                                title="Copiar Prompt"
+                                            >
+                                                <Copy className="w-4 h-4" />
+                                            </Button>
+                                        )}
+
                                         <Button
                                             size="icon"
                                             variant="secondary"
-                                            className="h-8 w-8 rounded-full shadow-lg"
+                                            className="h-8 w-8 rounded-lg shadow-lg"
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 const link = document.createElement("a");

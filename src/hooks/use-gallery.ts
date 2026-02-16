@@ -7,6 +7,7 @@ export interface GalleryItem {
     url: string;
     character: string;
     style: string;
+    prompt: string;
     date: number;
 }
 
@@ -27,12 +28,13 @@ export function useGallery() {
         }
     }, []);
 
-    const addImage = (url: string, character: string, style: string) => {
+    const addImage = (url: string, character: string, style: string, prompt: string) => {
         const newItem: GalleryItem = {
             id: crypto.randomUUID(),
             url,
             character,
             style,
+            prompt,
             date: Date.now(),
         };
 

@@ -1,11 +1,15 @@
 "use server";
 
-import { supabase } from "@/lib/supabase"; // Correct path
+import { supabase } from "@/lib/supabase";
 
+// Using flux model from Pollinations (best quality free model)
 const MODEL = "flux";
 const TIMEOUT_MS = 60000;
+
+// API Key 
 const API_KEY = "sk_CYFcjzBiyuHmEZjq3WoUbtWz2k6CgBPN";
 
+// Character detailed prompts
 const CHARACTERS: Record<string, string> = {
   goku: "Son Goku from Dragon Ball Z, Super Saiyan hair, orange martial arts gi, muscular build, intense gaze, anime masterpiece",
   naruto: "Naruto Uzumaki from Naruto Shippuden, blonde spiky hair, whisker marks on face, orange and black ninja outfit, headband, energetic expression",
@@ -19,6 +23,7 @@ const CHARACTERS: Record<string, string> = {
   vegeta: "Vegeta from Dragon Ball, Saiyan battle armor, spiky vertical hair, arms crossed, prideful smirk, blue energy aura",
 };
 
+// Style modifiers
 const STYLES: Record<string, string> = {
   flux: "high quality anime art, detailed shading, vibrant colors, 8k resolution, cinematic composition",
   realistic: "realistic cosplay photo, live action movie adoption, detailed skin texture, cinematic lighting, 85mm lens, photorealistic",
@@ -34,11 +39,16 @@ export async function generateImage(characterId: string, styleId: string, custom
   const characterPrompt = CHARACTERS[characterId] || CHARACTERS.goku;
   const styleModifier = STYLES[styleId] || STYLES.flux;
 
+  // Combine prompts
   const finalPrompt = `masterpiece, best quality, ${characterPrompt}, ${styleModifier}, ${customPrompt ? customPrompt + ',' : ''} looking at viewer, detailed face`;
+
   const encodedPrompt = encodeURIComponent(finalPrompt);
   const seed = Math.floor(Math.random() * 1000000);
 
+  // Build URL with flux model
   const url = `https://gen.pollinations.ai/image/${encodedPrompt}?model=${MODEL}&seed=${seed}&width=${width}&height=${height}&nologo=true`;
+
+  console.log(`Generating: ${characterId} in ${styleId} style`);
 
   try {
     const controller = new AbortController();
@@ -64,25 +74,29 @@ export async function generateImage(characterId: string, styleId: string, custom
       const arrayBuffer = await response.arrayBuffer();
       const buffer = Buffer.from(arrayBuffer);
 
+      // --- SUPABASE UPLOAD ---
       const fileName = `${characterId}-${Date.now()}.jpg`;
-      const { error: uploadError } = await supabase.storage
+      const { data: uploadData, error: uploadError } = await supabase.storage
         .from('gallery')
         .upload(fileName, buffer, {
           contentType: 'image/jpeg',
           cacheControl: '3600',
+          upsert: false
         });
 
       if (uploadError) {
         console.error("Upload Error:", uploadError);
+        // Fallback to dataUrl even if upload fails
         const base64 = buffer.toString("base64");
-        return { success: true, imageUrl: `data:image/jpeg;base64,${base64}` };
+        return { success: true, imageUrl: `data:image/jpeg;base64,${base64}`, prompt: finalPrompt };
       }
 
       const { data: { publicUrl } } = supabase.storage
         .from('gallery')
         .getPublicUrl(fileName);
 
-      await supabase
+      // --- SAVE TO DATABASE ---
+      const { error: dbError } = await supabase
         .from('generations')
         .insert({
           image_url: publicUrl,
@@ -91,7 +105,9 @@ export async function generateImage(characterId: string, styleId: string, custom
           prompt: customPrompt || null
         });
 
-      return { success: true, imageUrl: publicUrl };
+      if (dbError) console.error("Database Error:", dbError);
+
+      return { success: true, imageUrl: publicUrl, prompt: finalPrompt };
     }
 
     return { success: false, error: "Formato de resposta inválido" };

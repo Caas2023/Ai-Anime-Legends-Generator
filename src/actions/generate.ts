@@ -2,9 +2,8 @@
 
 import { supabase } from "@/lib/supabase";
 
-// Usando o modelo imagen-4 (mais recente do Pollinations)
-const MODEL = "imagen-4";
-const TIMEOUT_MS = 60000;
+const MODEL = "flux";
+const TIMEOUT_MS = 45000;
 const API_KEY = process.env.POLLINATIONS_API_KEY;
 
 const CHARACTERS: Record<string, string> = {
@@ -32,15 +31,15 @@ const STYLES: Record<string, string> = {
 };
 
 /**
- * Gera um prompt dinâmico e único usando IA de texto
+ * Gera um prompt dinâmico e único usando IA de texto (com timeout de 8s)
  */
-async function getDynamicPrompt(characterLabel: string, styleLabel: string, customDetails: string) {
-  const systemPrompt = "Você é um diretor de arte criativo. Sua missão é criar um prompt de imagem detalhado e ÚNICO para um gerador de IA. Cada prompt deve descrever uma cena diferente: mude a pose, o clima, a iluminação e o cenário de fundo. Mantenha o foco em estética anime. Output apenas o texto do prompt em inglês.";
-  const userRequest = `Personagem: ${characterLabel}. Estilo: ${styleLabel}. Detalhes extras: ${customDetails || 'Crie uma cena épica aleatória'}.`;
+async function getDynamicPrompt(characterLabel: string, styleLabel: string, customDetails: string): Promise<string | null> {
+  const systemPrompt = "You are a creative art director. Create a UNIQUE, detailed image prompt for an AI image generator. Vary the pose, mood, lighting, and background scene each time. Focus on anime aesthetics. Output ONLY the prompt text in English, nothing else.";
+  const userRequest = `Character: ${characterLabel}. Art Style: ${styleLabel}. Extra details: ${customDetails || 'Create a random epic scene'}.`;
 
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 10000);
+    const timeout = setTimeout(() => controller.abort(), 8000);
 
     const response = await fetch("https://text.pollinations.ai/", {
       method: "POST",
@@ -60,41 +59,46 @@ async function getDynamicPrompt(characterLabel: string, styleLabel: string, cust
 
     if (response.ok) {
       const text = await response.text();
-      return text.trim();
+      const cleaned = text.trim();
+      if (cleaned.length > 10) {
+        console.log("[DYNAMIC PROMPT] OK:", cleaned.substring(0, 80) + "...");
+        return cleaned;
+      }
     }
   } catch (error) {
-    console.error("[DYNAMIC PROMPT ERROR]", error);
+    console.warn("[DYNAMIC PROMPT] Timeout ou erro, usando fallback.");
   }
   return null;
 }
 
 export async function generateImage(characterId: string, styleId: string, customPrompt?: string, width: number = 768, height: number = 1024) {
-  const characterLabel = CHARACTERS[characterId] || characterId;
-  const styleLabel = STYLES[styleId] || styleId;
-
-  console.log(`[ACTION] Gerando imagem dinâmica para ${characterId}...`);
-
-  // Tenta criar um prompt único com a IA de texto
-  let finalPrompt = await getDynamicPrompt(characterLabel, styleLabel, customPrompt || "");
-
-  // Fallback se a IA de texto falhar
-  if (!finalPrompt) {
-    const characterBase = CHARACTERS[characterId] || characterId;
-    const styleBase = STYLES[styleId] || styleId;
-    finalPrompt = `masterpiece, high quality, anime style, ${characterBase}, ${styleBase}, ${customPrompt || ''}, detailed background, cinematic lighting`;
-  }
-
-  const encodedPrompt = encodeURIComponent(finalPrompt);
-  const seed = Math.floor(Math.random() * 1000000);
-  const url = `https://gen.pollinations.ai/image/${encodedPrompt}?model=${MODEL}&seed=${seed}&width=${width}&height=${height}&nologo=true`;
-
   try {
+    const characterLabel = CHARACTERS[characterId] || characterId;
+    const styleLabel = STYLES[styleId] || styleId;
+
+    console.log(`[GEN] Início: ${characterId} | ${styleId}`);
+
+    // 1. Tenta prompt dinâmico (máx 8s)
+    let finalPrompt = await getDynamicPrompt(characterLabel, styleLabel, customPrompt || "");
+
+    // 2. Fallback: template fixo
+    if (!finalPrompt) {
+      console.log("[GEN] Usando prompt fixo (fallback)");
+      finalPrompt = `masterpiece, best quality, anime style, ${characterLabel}, ${styleLabel}, ${customPrompt || ''}, detailed background, cinematic lighting, looking at viewer`;
+    }
+
+    // 3. Gera a imagem
+    const encodedPrompt = encodeURIComponent(finalPrompt);
+    const seed = Math.floor(Math.random() * 1000000);
+    const url = `https://image.pollinations.ai/prompt/${encodedPrompt}?model=${MODEL}&seed=${seed}&width=${width}&height=${height}&nologo=true`;
+
+    console.log(`[GEN] Chamando API de imagem... (timeout: ${TIMEOUT_MS}ms)`);
+
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
     const fetchOptions: RequestInit = {
       method: "GET",
-      cache: "no-store",
       signal: controller.signal,
     };
 
@@ -105,18 +109,28 @@ export async function generateImage(characterId: string, styleId: string, custom
     const response = await fetch(url, fetchOptions);
     clearTimeout(timeoutId);
 
+    console.log(`[GEN] Resposta: ${response.status} | Content-Type: ${response.headers.get("content-type")}`);
+
     if (!response.ok) {
-      console.error(`[API ERROR] ${response.status}`);
-      return { success: false, error: `Erro na API da IA (${response.status}).` };
+      return { success: false, error: `Erro na API (${response.status}). Tente novamente.` };
     }
 
-    const contentType = response.headers.get("content-type");
-    if (contentType?.includes("image")) {
-      const arrayBuffer = await response.arrayBuffer();
-      const buffer = Buffer.from(arrayBuffer);
-      const base64 = buffer.toString("base64");
-      const dataUrl = `data:image/jpeg;base64,${base64}`;
+    const contentType = response.headers.get("content-type") || "";
+    if (!contentType.includes("image")) {
+      return { success: false, error: "A IA não retornou uma imagem. Tente outro estilo." };
+    }
 
+    // 4. Converte para base64
+    const arrayBuffer = await response.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    const base64 = buffer.toString("base64");
+    const mimeType = contentType.includes("png") ? "image/png" : "image/jpeg";
+    const dataUrl = `data:${mimeType};base64,${base64}`;
+
+    console.log(`[GEN] Imagem recebida: ${buffer.length} bytes`);
+
+    // 5. Tenta salvar no Supabase (NÃO bloqueia a resposta)
+    if (supabase) {
       try {
         const fileName = `${characterId}-${Date.now()}.jpg`;
         const { error: uploadError } = await supabase.storage
@@ -131,22 +145,27 @@ export async function generateImage(characterId: string, styleId: string, custom
             style_id: styleId,
             prompt: finalPrompt
           });
+          console.log("[GEN] Salvo no Supabase:", publicUrl);
           return { success: true, imageUrl: publicUrl, prompt: finalPrompt };
+        } else {
+          console.warn("[SUPABASE] Upload falhou:", uploadError.message);
         }
       } catch (e) {
-        console.warn("[SUPABASE LOG]", e);
+        console.warn("[SUPABASE] Erro ignorado:", e);
       }
-
-      return { success: true, imageUrl: dataUrl, prompt: finalPrompt };
     }
 
-    return { success: false, error: "A IA não retornou uma imagem." };
+    // 6. Retorna imagem em base64 (fallback sem Supabase)
+    console.log("[GEN] Retornando via base64 (sem Supabase)");
+    return { success: true, imageUrl: dataUrl, prompt: finalPrompt };
 
-  } catch (error) {
-    console.error("[FETCH ERROR]", error);
-    if (error instanceof Error && error.name === "AbortError") {
-      return { success: false, error: "Conexão lenta. Tente novamente." };
+  } catch (error: any) {
+    console.error("[GEN FATAL]", error?.message || error);
+
+    if (error?.name === "AbortError") {
+      return { success: false, error: "A geração demorou demais (45s). Tente um tamanho menor." };
     }
-    return { success: false, error: "Falha na conexão com a IA." };
+
+    return { success: false, error: "Falha na conexão com a IA. Verifique sua internet." };
   }
 }

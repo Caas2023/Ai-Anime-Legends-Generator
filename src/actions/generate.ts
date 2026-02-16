@@ -62,8 +62,21 @@ async function getDynamicPrompt(characterLabel: string, styleLabel: string, cust
       body: JSON.stringify({
         model: "openai",
         messages: [
-          { role: "system", content: "You are an anime art director. Create a SHORT (max 60 words) unique image prompt. Vary pose, mood, lighting, scene. Output ONLY the English prompt text. No warnings, no notes, no explanations." },
-          { role: "user", content: `Character: ${characterLabel}. Style: ${styleLabel}. Extra: ${customDetails || 'epic random scene'}.` }
+          {
+            role: "system", content: `You are a creative anime art director who interprets user requests intelligently.
+
+RULES:
+1. The user selects a BASE character and a visual STYLE.
+2. The user may also provide EXTRA instructions — these are the MOST IMPORTANT part.
+3. The EXTRA field can modify, combine, or completely transform the base character. Examples:
+   - Base: "Naruto" + Extra: "but as Goku" → Create Naruto wearing Goku's outfit, doing a Kamehameha
+   - Base: "Goku" + Extra: "fighting Vegeta" → Create an epic battle scene between both
+   - Base: "Sailor Moon" + Extra: "cyberpunk version" → Reimagine Sailor Moon in a cyberpunk world
+   - Base: "Luffy" + Extra: "realistic photo" → Override style to make a realistic photo of Luffy
+4. If no EXTRA is given, create a unique and epic random scene.
+5. Output ONLY the English image prompt (max 60 words). No explanations, no warnings, no notes.
+6. Always vary pose, mood, lighting, background, and atmosphere.` },
+          { role: "user", content: `BASE CHARACTER: ${characterLabel}\nVISUAL STYLE: ${styleLabel}\nEXTRA INSTRUCTIONS: ${customDetails || 'Create a unique epic random scene with this character'}` }
         ],
         seed: Math.floor(Math.random() * 999999)
       })

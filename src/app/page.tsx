@@ -3,7 +3,7 @@
 import * as React from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { Wand2, Download, RefreshCw, Sparkles, AlertCircle, Instagram, Facebook, MessageCircle, Share2 } from "lucide-react";
+import { Wand2, Download, RefreshCw, Sparkles, AlertCircle, Instagram, Facebook, MessageCircle, Share2, Github } from "lucide-react";
 
 import { CharacterSelector, CHARACTERS } from "@/components/character-selector";
 import { ModelSelector, ART_STYLES } from "@/components/model-selector";
@@ -417,6 +417,47 @@ export default function Home() {
           </div>
 
         </div>
+
+        {/* Footer with Credits */}
+        <footer className="mt-20 py-10 border-t border-white/5 text-center space-y-6">
+          <div className="flex flex-col items-center justify-center space-y-4">
+            <a
+              href="https://pollinations.ai"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group transition-all hover:scale-105"
+            >
+              <div className="flex items-center space-x-3 bg-white/5 backdrop-blur-xl border border-white/10 px-6 py-3 rounded-2xl shadow-2xl group-hover:border-primary/50 group-hover:bg-white/10 transition-all">
+                <span className="text-white/40 font-bold text-[10px] tracking-[0.2em] uppercase">Built with</span>
+                <div className="h-6 w-px bg-white/10" />
+                <img
+                  src="https://pollinations.ai/logo_text_white.png"
+                  alt="Pollinations.ai Logo"
+                  className="h-5 opacity-80 group-hover:opacity-100 transition-opacity"
+                />
+              </div>
+            </a>
+
+            <div className="flex items-center space-x-6">
+              <p className="text-white/20 text-[10px] font-bold tracking-[0.3em] uppercase">
+                © {new Date().getFullYear()} ANIME LEGENDS • AI ART GENERATOR
+              </p>
+            </div>
+
+            <div className="flex items-center space-x-4">
+              <a href="https://github.com/Caas2023/anime-transformer" target="_blank" className="text-white/20 hover:text-white/60 transition-colors">
+                <Github className="w-5 h-5" />
+              </a>
+            </div>
+          </div>
+
+          <div className="max-w-md mx-auto">
+            <p className="text-white/10 text-[9px] leading-relaxed uppercase tracking-tighter">
+              Utilizando o modelo FLUX via Pollinations API. Todas as imagens são geradas por inteligência artificial.
+              Respeite os termos de uso da plataforma.
+            </p>
+          </div>
+        </footer>
       </div>
     </main >
   );

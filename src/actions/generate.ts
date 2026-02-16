@@ -1,13 +1,11 @@
 "use server";
 
-// Using flux model from Pollinations (best quality free model)
+import { supabase } from "@/lib/supabase"; // Correct path
+
 const MODEL = "flux";
 const TIMEOUT_MS = 60000;
-
-// API Key 
 const API_KEY = "sk_CYFcjzBiyuHmEZjq3WoUbtWz2k6CgBPN";
 
-// Character detailed prompts
 const CHARACTERS: Record<string, string> = {
   goku: "Son Goku from Dragon Ball Z, Super Saiyan hair, orange martial arts gi, muscular build, intense gaze, anime masterpiece",
   naruto: "Naruto Uzumaki from Naruto Shippuden, blonde spiky hair, whisker marks on face, orange and black ninja outfit, headband, energetic expression",
@@ -21,7 +19,6 @@ const CHARACTERS: Record<string, string> = {
   vegeta: "Vegeta from Dragon Ball, Saiyan battle armor, spiky vertical hair, arms crossed, prideful smirk, blue energy aura",
 };
 
-// Style modifiers
 const STYLES: Record<string, string> = {
   flux: "high quality anime art, detailed shading, vibrant colors, 8k resolution, cinematic composition",
   realistic: "realistic cosplay photo, live action movie adoption, detailed skin texture, cinematic lighting, 85mm lens, photorealistic",
@@ -37,17 +34,11 @@ export async function generateImage(characterId: string, styleId: string, custom
   const characterPrompt = CHARACTERS[characterId] || CHARACTERS.goku;
   const styleModifier = STYLES[styleId] || STYLES.flux;
 
-  // Combine prompts
   const finalPrompt = `masterpiece, best quality, ${characterPrompt}, ${styleModifier}, ${customPrompt ? customPrompt + ',' : ''} looking at viewer, detailed face`;
-
   const encodedPrompt = encodeURIComponent(finalPrompt);
   const seed = Math.floor(Math.random() * 1000000);
 
-  // Build URL with flux model
   const url = `https://gen.pollinations.ai/image/${encodedPrompt}?model=${MODEL}&seed=${seed}&width=${width}&height=${height}&nologo=true`;
-
-  console.log(`Generating: ${characterId} in ${styleId} style`);
-  console.log("Prompt:", finalPrompt);
 
   try {
     const controller = new AbortController();
@@ -57,7 +48,6 @@ export async function generateImage(characterId: string, styleId: string, custom
       method: "GET",
       headers: {
         "Authorization": `Bearer ${API_KEY}`,
-        "Referer": "https://anime-legends.vercel.app", // Good practice
       },
       cache: "no-store",
       signal: controller.signal,
@@ -65,35 +55,49 @@ export async function generateImage(characterId: string, styleId: string, custom
 
     clearTimeout(timeoutId);
 
-    // Check for specific error status
-    if (response.status === 429) {
-      return { success: false, error: "Muitos pedidos. Aguarde um momento." };
-    }
-
     if (!response.ok) {
-      console.error(`API Error: ${response.status}`);
       return { success: false, error: `Erro na API: ${response.status}` };
     }
 
     const contentType = response.headers.get("content-type");
-
     if (contentType?.includes("image")) {
       const arrayBuffer = await response.arrayBuffer();
       const buffer = Buffer.from(arrayBuffer);
-      const base64 = buffer.toString("base64");
-      const mimeType = contentType || "image/jpeg";
-      const dataUrl = `data:${mimeType};base64,${base64}`;
 
-      return { success: true, imageUrl: dataUrl };
+      const fileName = `${characterId}-${Date.now()}.jpg`;
+      const { error: uploadError } = await supabase.storage
+        .from('gallery')
+        .upload(fileName, buffer, {
+          contentType: 'image/jpeg',
+          cacheControl: '3600',
+        });
+
+      if (uploadError) {
+        console.error("Upload Error:", uploadError);
+        const base64 = buffer.toString("base64");
+        return { success: true, imageUrl: `data:image/jpeg;base64,${base64}` };
+      }
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('gallery')
+        .getPublicUrl(fileName);
+
+      await supabase
+        .from('generations')
+        .insert({
+          image_url: publicUrl,
+          character_id: characterId,
+          style_id: styleId,
+          prompt: customPrompt || null
+        });
+
+      return { success: true, imageUrl: publicUrl };
     }
 
     return { success: false, error: "Formato de resposta inválido" };
 
   } catch (error) {
-    if (error instanceof Error && error.name === "AbortError") {
-      return { success: false, error: "Tempo limite excedido. Tente novamente." };
-    }
     console.error("Generate Error:", error);
-    return { success: false, error: "Falha na conexão com o servidor" };
+    return { success: false, error: "Falha na conexão" };
   }
 }

@@ -19,11 +19,31 @@ export default function Home() {
   const [selectedCharacter, setSelectedCharacter] = React.useState<string>("goku");
   const [selectedStyle, setSelectedStyle] = React.useState<string>("flux");
   const [customPrompt, setCustomPrompt] = React.useState<string>("");
+  const [isEnhancing, setIsEnhancing] = React.useState(false);
   const [generatedImage, setGeneratedImage] = React.useState<string | null>(null);
   const [isGenerating, setIsGenerating] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const { play } = useSound();
   const { images, addImage, removeImage } = useGallery();
+
+  const handleEnhance = async () => {
+    if (!customPrompt.trim()) return;
+    setIsEnhancing(true);
+    play("click");
+
+    try {
+      // Small delay to simulate AI thinking
+      await new Promise(resolve => setTimeout(resolve, 800));
+
+      const enhanced = `${customPrompt}, ultra detailed, cinematic lighting, dramatic atmosphere, masterpiece, 8k resolution, highly intricate details`;
+      setCustomPrompt(enhanced);
+      play("success");
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsEnhancing(false);
+    }
+  };
 
   const handleGenerate = async () => {
     setError(null);
@@ -133,10 +153,27 @@ export default function Home() {
                   placeholder="Ex: segurando uma espada de fogo, no topo de uma montanha..."
                   value={customPrompt}
                   onChange={(e) => setCustomPrompt(e.target.value)}
-                  disabled={isGenerating}
-                  className="bg-white/5 border-white/10 h-14 rounded-xl placeholder:text-white/20 focus:border-primary/50 focus:ring-primary/20 transition-all text-white"
+                  disabled={isGenerating || isEnhancing}
+                  className="bg-white/5 border-white/10 h-14 rounded-xl placeholder:text-white/20 focus:border-primary/50 focus:ring-primary/20 transition-all text-white pr-32"
                 />
-                <Sparkles className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20 group-focus-within:text-primary/50 transition-colors pointer-events-none" />
+                <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-10 px-3 bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 rounded-lg text-xs font-bold transition-all"
+                    onClick={handleEnhance}
+                    disabled={isGenerating || isEnhancing || !customPrompt.trim()}
+                  >
+                    {isEnhancing ? (
+                      <RefreshCw className="w-3 h-3 animate-spin" />
+                    ) : (
+                      <>
+                        <Sparkles className="w-3 h-3 mr-1.5" />
+                        MELHORAR
+                      </>
+                    )}
+                  </Button>
+                </div>
               </div>
               <p className="text-[10px] uppercase tracking-widest text-white/20 font-bold ml-1">
                 Adicione elementos personalizados à sua criação

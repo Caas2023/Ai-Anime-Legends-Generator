@@ -2,15 +2,14 @@
 
 import { supabase } from "@/lib/supabase";
 
-// === CONFIGURAÇÃO ===
-const POLLINATIONS_MODEL = "flux";
+// === CONFIGURAÇÃO (baseado na doc oficial gen.pollinations.ai) ===
+const POLLINATIONS_MODEL = "flux"; // modelos: flux, turbo, gptimage, zimage, seedream, nanobanana
 const TIMEOUT_MS = 45000;
 const MAX_PROMPT_LENGTH = 500;
 const POLLINATIONS_KEY = process.env.POLLINATIONS_API_KEY;
 const AIRFORCE_KEY = process.env.AIRFORCE_API_KEY;
-const AIRFORCE_COOLDOWN_MS = 61000; // 61 segundos entre chamadas
+const AIRFORCE_COOLDOWN_MS = 61000;
 
-// Controle de rate limit do AirForce (em memória do servidor)
 let lastAirforceCall = 0;
 
 // === PERSONAGENS ===
@@ -39,24 +38,33 @@ const STYLES: Record<string, string> = {
   dark: "dark fantasy, gothic horror, heavy shadows, dramatic contrast",
 };
 
-// === IA DE TEXTO (Prompt Dinâmico) ===
+// === IA DE TEXTO (endpoint oficial: /v1/chat/completions) ===
 async function getDynamicPrompt(characterLabel: string, styleLabel: string, customDetails: string): Promise<string | null> {
   try {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 8000);
 
-    // SEM autenticação — a API de texto funciona sem chave (anônimo)
-    // e COM chave ela injeta avisos de depreciação no texto
-    const response = await fetch("https://text.pollinations.ai/", {
+    // Usa o endpoint correto da API com autenticação
+    const headers: Record<string, string> = { "Content-Type": "application/json" };
+    let url = "https://gen.pollinations.ai/v1/chat/completions";
+
+    if (POLLINATIONS_KEY) {
+      headers["Authorization"] = `Bearer ${POLLINATIONS_KEY}`;
+    } else {
+      // Sem chave, usa o endpoint simples de texto (anônimo)
+      url = "https://gen.pollinations.ai/v1/chat/completions";
+    }
+
+    const response = await fetch(url, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers,
       signal: controller.signal,
       body: JSON.stringify({
+        model: "openai",
         messages: [
           { role: "system", content: "You are an anime art director. Create a SHORT (max 60 words) unique image prompt. Vary pose, mood, lighting, scene. Output ONLY the English prompt text. No warnings, no notes, no explanations." },
           { role: "user", content: `Character: ${characterLabel}. Style: ${styleLabel}. Extra: ${customDetails || 'epic random scene'}.` }
         ],
-        model: "openai",
         seed: Math.floor(Math.random() * 999999)
       })
     });
@@ -64,16 +72,20 @@ async function getDynamicPrompt(characterLabel: string, styleLabel: string, cust
     clearTimeout(timeout);
 
     if (response.ok) {
-      let text = (await response.text()).trim();
+      const json = await response.json();
+      let text = json?.choices?.[0]?.message?.content?.trim() || "";
 
-      // Remove qualquer aviso/lixo injetado pela API
+      // Limpa qualquer lixo
       text = sanitizePrompt(text);
 
       if (text.length > MAX_PROMPT_LENGTH) text = text.substring(0, MAX_PROMPT_LENGTH);
-      if (text.length > 20) return text;
+      if (text.length > 20) {
+        console.log("[PROMPT] Dinâmico OK:", text.substring(0, 80) + "...");
+        return text;
+      }
     }
   } catch {
-    console.warn("[PROMPT] IA de texto indisponível.");
+    console.warn("[PROMPT] IA de texto indisponível, usando fallback.");
   }
   return null;
 }
@@ -82,7 +94,6 @@ async function getDynamicPrompt(characterLabel: string, styleLabel: string, cust
  * Limpa o prompt removendo avisos, notas e lixo injetado pela API
  */
 function sanitizePrompt(text: string): string {
-  // Remove blocos que contenham avisos típicos
   const warningPatterns = [
     /⚠️[^]*?(?=\n\n|$)/gi,
     /\*\*IMPORTANT[^]*?(?=\n\n|$)/gi,
@@ -99,10 +110,8 @@ function sanitizePrompt(text: string): string {
     cleaned = cleaned.replace(pattern, "");
   }
 
-  // Remove linhas vazias extras
   cleaned = cleaned.replace(/\n{3,}/g, "\n").trim();
 
-  // Remove aspas que envolvam o prompt inteiro
   if ((cleaned.startsWith('"') && cleaned.endsWith('"')) || (cleaned.startsWith("'") && cleaned.endsWith("'"))) {
     cleaned = cleaned.slice(1, -1).trim();
   }
@@ -110,21 +119,30 @@ function sanitizePrompt(text: string): string {
   return cleaned;
 }
 
-// === API PRINCIPAL: POLLINATIONS ===
+// === API PRINCIPAL: POLLINATIONS (endpoint oficial: /image/{prompt}) ===
 async function fetchFromPollinations(prompt: string, width: number, height: number): Promise<{ buffer: Buffer; contentType: string } | null> {
-  const encoded = encodeURIComponent(prompt.substring(0, MAX_PROMPT_LENGTH));
+  const truncated = prompt.substring(0, MAX_PROMPT_LENGTH);
+  const encoded = encodeURIComponent(truncated);
   const seed = Math.floor(Math.random() * 999999);
-  const url = `https://image.pollinations.ai/prompt/${encoded}?model=${POLLINATIONS_MODEL}&seed=${seed}&width=${width}&height=${height}&nologo=true`;
+
+  // URL oficial: https://gen.pollinations.ai/image/{prompt}
+  const url = `https://gen.pollinations.ai/image/${encoded}?model=${POLLINATIONS_MODEL}&seed=${seed}&width=${width}&height=${height}&nologo=true`;
+
+  console.log(`[POLLINATIONS] Chamando: model=${POLLINATIONS_MODEL}, seed=${seed}, ${width}x${height}`);
 
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
     const headers: Record<string, string> = {};
-    if (POLLINATIONS_KEY) headers["Authorization"] = `Bearer ${POLLINATIONS_KEY}`;
+    if (POLLINATIONS_KEY) {
+      headers["Authorization"] = `Bearer ${POLLINATIONS_KEY}`;
+    }
 
     const response = await fetch(url, { method: "GET", signal: controller.signal, headers });
     clearTimeout(timeoutId);
+
+    console.log(`[POLLINATIONS] Resposta: ${response.status} | CT: ${response.headers.get("content-type")}`);
 
     if (response.ok) {
       const ct = response.headers.get("content-type") || "";
@@ -133,6 +151,7 @@ async function fetchFromPollinations(prompt: string, width: number, height: numb
         return { buffer: Buffer.from(arrayBuffer), contentType: ct };
       }
     }
+
     console.warn(`[POLLINATIONS] Falhou: ${response.status}`);
   } catch (e: any) {
     console.warn(`[POLLINATIONS] Erro: ${e?.name || e}`);
@@ -147,7 +166,6 @@ async function fetchFromAirforce(prompt: string, width: number, height: number):
     return null;
   }
 
-  // Verifica rate limit de 61 segundos
   const now = Date.now();
   const timeSinceLastCall = now - lastAirforceCall;
   if (timeSinceLastCall < AIRFORCE_COOLDOWN_MS) {
@@ -156,12 +174,11 @@ async function fetchFromAirforce(prompt: string, width: number, height: number):
     return null;
   }
 
-  // Mapeia tamanhos suportados
   let size = "1024x1024";
   if (width > height) size = "1024x768";
   else if (height > width) size = "768x1024";
 
-  console.log(`[AIRFORCE] Tentando gerar com modelo plutogen-o1...`);
+  console.log(`[AIRFORCE] Tentando com plutogen-o1, size=${size}...`);
 
   try {
     const controller = new AbortController();
@@ -185,7 +202,7 @@ async function fetchFromAirforce(prompt: string, width: number, height: number):
     });
 
     clearTimeout(timeoutId);
-    lastAirforceCall = Date.now(); // Atualiza timestamp mesmo se falhar (respeitar rate limit)
+    lastAirforceCall = Date.now();
 
     if (!response.ok) {
       console.warn(`[AIRFORCE] API retornou: ${response.status}`);
@@ -194,31 +211,19 @@ async function fetchFromAirforce(prompt: string, width: number, height: number):
 
     // Processa SSE response
     const text = await response.text();
-    const lines = text.split("\n");
-
     let imageUrl: string | null = null;
 
-    for (const line of lines) {
+    for (const line of text.split("\n")) {
       if (line.startsWith("data: ") && line !== "data: [DONE]" && !line.includes("keepalive")) {
         try {
           const data = JSON.parse(line.substring(6));
-          // Busca URL da imagem no response
-          if (data?.data?.[0]?.url) {
-            imageUrl = data.data[0].url;
-            break;
-          }
-          if (data?.url) {
-            imageUrl = data.url;
-            break;
-          }
-        } catch {
-          // Linha SSE inválida, pula
-        }
+          if (data?.data?.[0]?.url) { imageUrl = data.data[0].url; break; }
+          if (data?.url) { imageUrl = data.url; break; }
+        } catch { /* SSE line inválida */ }
       }
     }
 
     if (!imageUrl) {
-      // Tenta parsear como JSON direto (sem SSE)
       try {
         const json = JSON.parse(text);
         imageUrl = json?.data?.[0]?.url || json?.url || null;
@@ -228,9 +233,7 @@ async function fetchFromAirforce(prompt: string, width: number, height: number):
     }
 
     if (imageUrl) {
-      console.log(`[AIRFORCE] Imagem gerada! Baixando de: ${imageUrl.substring(0, 80)}...`);
-
-      // Baixa a imagem da URL retornada
+      console.log(`[AIRFORCE] Imagem gerada! Baixando...`);
       const imgResponse = await fetch(imageUrl);
       if (imgResponse.ok) {
         const ct = imgResponse.headers.get("content-type") || "image/png";
@@ -239,7 +242,7 @@ async function fetchFromAirforce(prompt: string, width: number, height: number):
       }
     }
 
-    console.warn("[AIRFORCE] Nenhuma URL de imagem encontrada na resposta.");
+    console.warn("[AIRFORCE] Nenhuma URL de imagem encontrada.");
   } catch (e: any) {
     console.warn(`[AIRFORCE] Erro: ${e?.message || e}`);
     lastAirforceCall = Date.now();
@@ -254,7 +257,7 @@ export async function generateImage(characterId: string, styleId: string, custom
     const styleLabel = STYLES[styleId] || styleId;
 
     console.log(`\n[GEN] ========================================`);
-    console.log(`[GEN] Personagem: ${characterId} | Estilo: ${styleId}`);
+    console.log(`[GEN] ${characterId} | ${styleId} | ${new Date().toISOString()}`);
 
     // 1. Prompt dinâmico via IA de texto
     let finalPrompt = await getDynamicPrompt(characterLabel, styleLabel, customPrompt || "");
@@ -267,32 +270,32 @@ export async function generateImage(characterId: string, styleId: string, custom
     console.log(`[GEN] Prompt: ${finalPrompt.substring(0, 100)}...`);
 
     // 3. Tenta POLLINATIONS primeiro
-    console.log("[GEN] Tentando Pollinations...");
+    console.log("[GEN] >>> Tentando Pollinations...");
     let result = await fetchFromPollinations(finalPrompt, width, height);
 
-    // 4. Se falhou, tenta Pollinations com prompt simples
+    // 4. Retry com prompt simples
     if (!result) {
-      console.log("[GEN] Retry Pollinations com prompt simples...");
+      console.log("[GEN] >>> Retry Pollinations (prompt simples)...");
       const simplePrompt = `anime art, ${CHARACTERS[characterId] || 'anime character'}, ${STYLES[styleId] || 'high quality'}`;
       result = await fetchFromPollinations(simplePrompt, width, height);
       if (result) finalPrompt = simplePrompt;
     }
 
-    // 5. Se ainda falhou, tenta AIRFORCE como reserva
+    // 5. Fallback AIRFORCE
     if (!result) {
-      console.log("[GEN] Pollinations indisponível. Tentando AirForce...");
+      console.log("[GEN] >>> Pollinations indisponível. Tentando AirForce...");
       result = await fetchFromAirforce(finalPrompt, width, height);
     }
 
-    // 6. Se tudo falhou
+    // 6. Tudo falhou
     if (!result) {
       const now = Date.now();
-      const timeSinceLastAirforce = now - lastAirforceCall;
-      if (timeSinceLastAirforce < AIRFORCE_COOLDOWN_MS && AIRFORCE_KEY) {
-        const waitSec = Math.ceil((AIRFORCE_COOLDOWN_MS - timeSinceLastAirforce) / 1000);
+      const timeSince = now - lastAirforceCall;
+      if (timeSince < AIRFORCE_COOLDOWN_MS && AIRFORCE_KEY) {
+        const waitSec = Math.ceil((AIRFORCE_COOLDOWN_MS - timeSince) / 1000);
         return { success: false, error: `Servidores ocupados. API reserva disponível em ${waitSec}s. Tente novamente.` };
       }
-      return { success: false, error: "Ambos os servidores de IA estão indisponíveis. Aguarde 1-2 min." };
+      return { success: false, error: "Servidores de IA indisponíveis. Aguarde 1-2 min e tente novamente." };
     }
 
     // 7. Converte para base64
@@ -300,7 +303,7 @@ export async function generateImage(characterId: string, styleId: string, custom
     const mimeType = result.contentType.includes("png") ? "image/png" : "image/jpeg";
     const dataUrl = `data:${mimeType};base64,${base64}`;
 
-    console.log(`[GEN] ✅ Imagem OK: ${result.buffer.length} bytes`);
+    console.log(`[GEN] ✅ OK: ${result.buffer.length} bytes`);
 
     // 8. Salva no Supabase (opcional)
     if (supabase) {
@@ -331,7 +334,7 @@ export async function generateImage(characterId: string, styleId: string, custom
     console.error("[GEN FATAL]", error?.message || error);
 
     if (error?.name === "AbortError") {
-      return { success: false, error: "Timeout. Tente um tamanho menor." };
+      return { success: false, error: "Timeout. Tente novamente." };
     }
 
     return { success: false, error: "Falha na conexão. Verifique sua internet." };

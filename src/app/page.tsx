@@ -9,6 +9,7 @@ import { CharacterSelector, CHARACTERS } from "@/components/character-selector";
 import { ModelSelector, ART_STYLES } from "@/components/model-selector";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { generateImage } from "@/actions/generate";
 import { Gallery } from "@/components/gallery";
 import { useGallery } from "@/hooks/use-gallery";
@@ -17,6 +18,7 @@ import { useSound } from "@/hooks/use-sound";
 export default function Home() {
   const [selectedCharacter, setSelectedCharacter] = React.useState<string>("goku");
   const [selectedStyle, setSelectedStyle] = React.useState<string>("flux");
+  const [customPrompt, setCustomPrompt] = React.useState<string>("");
   const [generatedImage, setGeneratedImage] = React.useState<string | null>(null);
   const [isGenerating, setIsGenerating] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -28,7 +30,7 @@ export default function Home() {
     setIsGenerating(true);
     setGeneratedImage(null);
 
-    const result = await generateImage(selectedCharacter, selectedStyle);
+    const result = await generateImage(selectedCharacter, selectedStyle, customPrompt);
 
     if (result.success && result.imageUrl) {
       setGeneratedImage(result.imageUrl);
@@ -118,6 +120,27 @@ export default function Home() {
                 onChange={(val) => { setSelectedStyle(val); play("click"); }}
                 disabled={isGenerating}
               />
+            </div>
+
+            {/* Custom Prompt Context */}
+            <div className="space-y-4">
+              <div className="flex items-center space-x-3">
+                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500 to-cyan-600 text-white text-sm font-bold shadow-lg shadow-emerald-500/25">3</div>
+                <h2 className="text-xl font-bold tracking-tight">Detalhes Extras</h2>
+              </div>
+              <div className="relative group">
+                <Input
+                  placeholder="Ex: segurando uma espada de fogo, no topo de uma montanha..."
+                  value={customPrompt}
+                  onChange={(e) => setCustomPrompt(e.target.value)}
+                  disabled={isGenerating}
+                  className="bg-white/5 border-white/10 h-14 rounded-xl placeholder:text-white/20 focus:border-primary/50 focus:ring-primary/20 transition-all text-white"
+                />
+                <Sparkles className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20 group-focus-within:text-primary/50 transition-colors pointer-events-none" />
+              </div>
+              <p className="text-[10px] uppercase tracking-widest text-white/20 font-bold ml-1">
+                Adicione elementos personalizados à sua criação
+              </p>
             </div>
 
             {/* Error Message */}

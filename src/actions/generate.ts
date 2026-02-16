@@ -33,13 +33,13 @@ const STYLES: Record<string, string> = {
   dark: "dark fantasy, gothic horror, heavy shadows, berserk art style, dramatic contrast, grim atmosphere",
 };
 
-export async function generateImage(characterId: string, styleId: string) {
+export async function generateImage(characterId: string, styleId: string, customPrompt?: string) {
   const characterPrompt = CHARACTERS[characterId] || CHARACTERS.goku;
   const styleModifier = STYLES[styleId] || STYLES.flux;
-  
+
   // Combine prompts
-  const finalPrompt = `masterpiece, best quality, ${characterPrompt}, ${styleModifier}, looking at viewer, detailed face`;
-  
+  const finalPrompt = `masterpiece, best quality, ${characterPrompt}, ${styleModifier}, ${customPrompt ? customPrompt + ',' : ''} looking at viewer, detailed face`;
+
   const encodedPrompt = encodeURIComponent(finalPrompt);
   const seed = Math.floor(Math.random() * 1000000);
 
@@ -64,7 +64,7 @@ export async function generateImage(characterId: string, styleId: string) {
     });
 
     clearTimeout(timeoutId);
-    
+
     // Check for specific error status
     if (response.status === 429) {
       return { success: false, error: "Muitos pedidos. Aguarde um momento." };
@@ -74,21 +74,21 @@ export async function generateImage(characterId: string, styleId: string) {
       console.error(`API Error: ${response.status}`);
       return { success: false, error: `Erro na API: ${response.status}` };
     }
-    
+
     const contentType = response.headers.get("content-type");
-    
+
     if (contentType?.includes("image")) {
       const arrayBuffer = await response.arrayBuffer();
       const buffer = Buffer.from(arrayBuffer);
       const base64 = buffer.toString("base64");
       const mimeType = contentType || "image/jpeg";
       const dataUrl = `data:${mimeType};base64,${base64}`;
-      
+
       return { success: true, imageUrl: dataUrl };
     }
-    
+
     return { success: false, error: "Formato de resposta inválido" };
-    
+
   } catch (error) {
     if (error instanceof Error && error.name === "AbortError") {
       return { success: false, error: "Tempo limite excedido. Tente novamente." };

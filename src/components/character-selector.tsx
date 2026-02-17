@@ -87,36 +87,72 @@ const colorClasses: Record<string, { active: string; hover: string; icon: string
 };
 
 export function CharacterSelector({ value, onChange, disabled }: CharacterSelectorProps) {
-  return (
-    <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-      {CHARACTERS.map((char) => {
-        const Icon = char.icon;
-        const colors = colorClasses[char.color];
-        const isSelected = value === char.id;
+  const scrollContainerRef = React.useRef<HTMLDivElement>(null);
 
-        return (
-          <button
-            key={char.id}
-            onClick={() => onChange(char.id)}
-            disabled={disabled}
-            className={cn(
-              "flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-all duration-300 gap-1.5 relative overflow-hidden group",
-              isSelected
-                ? `${colors.active} shadow-[0_0_15px_rgba(0,0,0,0.5)] scale-105`
-                : `border-white/5 bg-card/30 hover:bg-card/60 text-muted-foreground ${colors.hover}`,
-              disabled && "opacity-50 cursor-not-allowed"
-            )}
-          >
-            <div className={cn("p-2 rounded-full bg-black/40 backdrop-blur-sm", isSelected ? colors.icon : "text-muted-foreground group-hover:text-white")}>
-              <Icon className="w-8 h-8 md:w-6 md:h-6" />
-            </div>
-            <div className="text-center">
-              <span className="text-sm font-bold block">{char.label}</span>
-              <span className="text-[10px] opacity-70 uppercase tracking-wider">{char.anime}</span>
-            </div>
-          </button>
-        );
-      })}
+  const scroll = (direction: 'left' | 'right') => {
+    if (scrollContainerRef.current) {
+      const scrollAmount = 600;
+      scrollContainerRef.current.scrollBy({
+        left: direction === 'left' ? -scrollAmount : scrollAmount,
+        behavior: 'smooth'
+      });
+    }
+  };
+
+  return (
+    <div className="relative group/carousel">
+      {/* Botão Esquerda */}
+      <button
+        onClick={() => scroll('left')}
+        className="absolute left-0 top-1/2 -translate-y-1/2 z-20 bg-black/60 hover:bg-black/90 text-white p-2 rounded-full backdrop-blur-md border border-white/10 opacity-0 group-hover/carousel:opacity-100 transition-opacity disabled:opacity-0"
+        type="button"
+      >
+        ←
+      </button>
+
+      {/* Botão Direita */}
+      <button
+        onClick={() => scroll('right')}
+        className="absolute right-0 top-1/2 -translate-y-1/2 z-20 bg-black/60 hover:bg-black/90 text-white p-2 rounded-full backdrop-blur-md border border-white/10 opacity-0 group-hover/carousel:opacity-100 transition-opacity disabled:opacity-0"
+        type="button"
+      >
+        →
+      </button>
+
+      {/* Container de Scroll */}
+      <div
+        ref={scrollContainerRef}
+        className="flex overflow-x-auto gap-3 pb-4 snap-x snap-mandatory scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent px-1"
+      >
+        {CHARACTERS.map((char) => {
+          const Icon = char.icon;
+          const colors = colorClasses[char.color];
+          const isSelected = value === char.id;
+
+          return (
+            <button
+              key={char.id}
+              onClick={() => onChange(char.id)}
+              disabled={disabled}
+              className={cn(
+                "flex-none w-[110px] md:w-[130px] snap-center flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-all duration-300 gap-2 relative overflow-hidden group",
+                isSelected
+                  ? `${colors.active} shadow-[0_0_15px_rgba(0,0,0,0.5)] scale-105 z-10`
+                  : `border-white/5 bg-card/30 hover:bg-card/60 text-muted-foreground ${colors.hover}`,
+                disabled && "opacity-50 cursor-not-allowed"
+              )}
+            >
+              <div className={cn("p-2.5 rounded-full bg-black/40 backdrop-blur-sm transition-transform group-hover:scale-110", isSelected ? colors.icon : "text-muted-foreground group-hover:text-white")}>
+                <Icon className="w-6 h-6 md:w-7 md:h-7" />
+              </div>
+              <div className="text-center w-full">
+                <span className="text-xs md:text-sm font-bold block truncate w-full px-1">{char.label}</span>
+                <span className="text-[9px] md:text-[10px] opacity-70 uppercase tracking-wider truncate block w-full">{char.anime}</span>
+              </div>
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }

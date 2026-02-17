@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
-import { Swords, Sparkles, Zap, Moon, Skull, Crown, Flame, Star, Ghost, Heart } from "lucide-react";
+import { Swords, Sparkles, Zap, Moon, Skull, Crown, Flame, Star, Ghost, Heart, Shield, Eye, Target, Cloud, Sun, Droplets, Wind, Hexagon, Circle } from "lucide-react";
 
 interface CharacterSelectorProps {
   value: string;
@@ -11,16 +11,65 @@ interface CharacterSelectorProps {
 }
 
 export const CHARACTERS = [
+  // Dragon Ball
   { id: "goku", label: "Goku", anime: "Dragon Ball", icon: Flame, color: "orange" },
+  { id: "vegeta", label: "Vegeta", anime: "Dragon Ball", icon: Crown, color: "blue" },
+  { id: "gohan", label: "Gohan", anime: "Dragon Ball", icon: Zap, color: "purple" },
+  { id: "broly", label: "Broly", anime: "Dragon Ball", icon: Shield, color: "green" },
+  { id: "frieza", label: "Frieza", anime: "Dragon Ball", icon: Hexagon, color: "purple" },
+
+  // Naruto
   { id: "naruto", label: "Naruto", anime: "Naruto", icon: Star, color: "yellow" },
+  { id: "sasuke", label: "Sasuke", anime: "Naruto", icon: Eye, color: "indigo" },
+  { id: "kakashi", label: "Kakashi", anime: "Naruto", icon: Target, color: "slate" },
+  { id: "itachi", label: "Itachi", anime: "Naruto", icon: Cloud, color: "red" },
+  { id: "sakura", label: "Sakura", anime: "Naruto", icon: Heart, color: "pink" },
+  { id: "hinata", label: "Hinata", anime: "Naruto", icon: Eye, color: "indigo" },
+  { id: "jiraiya", label: "Jiraiya", anime: "Naruto", icon: Sun, color: "orange" },
+
+  // One Piece
   { id: "luffy", label: "Luffy", anime: "One Piece", icon: Skull, color: "red" },
+  { id: "zoro", label: "Zoro", anime: "One Piece", icon: Swords, color: "green" },
+  { id: "sanji", label: "Sanji", anime: "One Piece", icon: Flame, color: "yellow" },
+  { id: "nami", label: "Nami", anime: "One Piece", icon: Circle, color: "orange" },
+  { id: "shanks", label: "Shanks", anime: "One Piece", icon: Swords, color: "red" },
+  { id: "law", label: "Law", anime: "One Piece", icon: Heart, color: "yellow" },
+  { id: "ace", label: "Ace", anime: "One Piece", icon: Flame, color: "orange" },
+
+  // Demon Slayer
+  { id: "nezuko", label: "Nezuko", anime: "Demon Slayer", icon: Heart, color: "rose" },
+  { id: "tanjiro", label: "Tanjiro", anime: "Demon Slayer", icon: Droplets, color: "cyan" },
+  { id: "zenitsu", label: "Zenitsu", anime: "Demon Slayer", icon: Zap, color: "yellow" },
+  { id: "inosuke", label: "Inosuke", anime: "Demon Slayer", icon: Swords, color: "blue" },
+  { id: "rengoku", label: "Rengoku", anime: "Demon Slayer", icon: Flame, color: "orange" },
+  { id: "shinobu", label: "Shinobu", anime: "Demon Slayer", icon: Moon, color: "purple" },
+
+  // Jujutsu Kaisen
+  { id: "gojo", label: "Gojo", anime: "Jujutsu Kaisen", icon: Eye, color: "cyan" },
+  { id: "yuji", label: "Yuji", anime: "Jujutsu Kaisen", icon: Shield, color: "rose" },
+  { id: "megumi", label: "Megumi", anime: "Jujutsu Kaisen", icon: Ghost, color: "slate" },
+  { id: "nobara", label: "Nobara", anime: "Jujutsu Kaisen", icon: Heart, color: "orange" },
+  { id: "sukuna", label: "Sukuna", anime: "Jujutsu Kaisen", icon: Skull, color: "red" },
+
+  // Chainsaw Man
+  { id: "makima", label: "Makima", anime: "Chainsaw Man", icon: Eye, color: "red" },
+  { id: "denji", label: "Denji", anime: "Chainsaw Man", icon: Swords, color: "orange" },
+  { id: "power", label: "Power", anime: "Chainsaw Man", icon: Crown, color: "rose" },
+
+  // Attack on Titan
+  { id: "eren", label: "Eren", anime: "Attack on Titan", icon: Target, color: "green" },
+  { id: "mikasa", label: "Mikasa", anime: "Attack on Titan", icon: Swords, color: "red" },
+  { id: "levi", label: "Levi", anime: "Attack on Titan", icon: Wind, color: "green" },
+
+  // Others
+  { id: "saitama", label: "Saitama", anime: "One Punch Man", icon: Shield, color: "yellow" },
+  { id: "deku", label: "Deku", anime: "My Hero", icon: Zap, color: "green" },
+  { id: "elric", label: "Edward", anime: "FMA", icon: Hexagon, color: "red" },
+  { id: "light", label: "Light", anime: "Death Note", icon: Moon, color: "slate" },
+  { id: "killua", label: "Killua", anime: "HxH", icon: Zap, color: "purple" },
+  { id: "gon", label: "Gon", anime: "HxH", icon: Shield, color: "green" },
   { id: "sailormoon", label: "Sailor Moon", anime: "Sailor Moon", icon: Moon, color: "pink" },
   { id: "ichigo", label: "Ichigo", anime: "Bleach", icon: Swords, color: "slate" },
-  { id: "zoro", label: "Zoro", anime: "One Piece", icon: Swords, color: "green" },
-  { id: "nezuko", label: "Nezuko", anime: "Demon Slayer", icon: Heart, color: "rose" },
-  { id: "gojo", label: "Gojo", anime: "Jujutsu Kaisen", icon: Zap, color: "cyan" },
-  { id: "makima", label: "Makima", anime: "Chainsaw Man", icon: Ghost, color: "red" },
-  { id: "vegeta", label: "Vegeta", anime: "Dragon Ball", icon: Crown, color: "blue" },
 ];
 
 const colorClasses: Record<string, { active: string; hover: string; icon: string }> = {
@@ -33,6 +82,8 @@ const colorClasses: Record<string, { active: string; hover: string; icon: string
   rose: { active: "border-rose-500 bg-rose-500/20 text-rose-100", hover: "hover:border-rose-500/50", icon: "text-rose-400" },
   cyan: { active: "border-cyan-500 bg-cyan-500/20 text-cyan-100", hover: "hover:border-cyan-500/50", icon: "text-cyan-400" },
   blue: { active: "border-blue-500 bg-blue-500/20 text-blue-100", hover: "hover:border-blue-500/50", icon: "text-blue-400" },
+  purple: { active: "border-purple-500 bg-purple-500/20 text-purple-100", hover: "hover:border-purple-500/50", icon: "text-purple-400" },
+  indigo: { active: "border-indigo-500 bg-indigo-500/20 text-indigo-100", hover: "hover:border-indigo-500/50", icon: "text-indigo-400" },
 };
 
 export function CharacterSelector({ value, onChange, disabled }: CharacterSelectorProps) {

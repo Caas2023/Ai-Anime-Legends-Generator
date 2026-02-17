@@ -14,16 +14,60 @@ let lastAirforceCall = 0;
 
 // === PERSONAGENS ===
 const CHARACTERS: Record<string, string> = {
+  // Dragon Ball
   goku: "Son Goku from Dragon Ball Z, Super Saiyan hair, orange martial arts gi, muscular build, intense gaze",
-  naruto: "Naruto Uzumaki from Naruto Shippuden, blonde spiky hair, whisker marks, orange ninja outfit, headband",
-  luffy: "Monkey D. Luffy from One Piece, straw hat, red vest, scar under eye, big smile",
-  sailormoon: "Sailor Moon Usagi Tsukino, magical girl outfit, blonde twin tails, tiara, sparkly",
-  ichigo: "Kurosaki Ichigo from Bleach, orange hair, black kimono, giant sword Zangetsu",
-  zoro: "Roronoa Zoro from One Piece, green hair, three swords, scarred eye, serious expression",
-  nezuko: "Nezuko Kamado from Demon Slayer, bamboo muzzle, black hair orange tips, pink kimono",
-  gojo: "Satoru Gojo from Jujutsu Kaisen, white hair, blue eyes, black uniform",
-  makima: "Makima from Chainsaw Man, pink-red hair, yellow ringed eyes, business suit",
   vegeta: "Vegeta from Dragon Ball, Saiyan armor, spiky hair, arms crossed, blue aura",
+  gohan: "Son Gohan Beast form, silver hair, red eyes, purple gi, intense lightning aura, muscular",
+  broly: "Broly Legendary Super Saiyan, massive muscles, green hair, shirtless, green energy aura, berserk",
+  frieza: "Frieza Golden Form, gold and purple bio-armor, evil smirk, tail, cosmic background, death beam",
+
+  // Naruto
+  naruto: "Naruto Uzumaki Six Paths Sage Mode, yellow eyes, orange chakra cloak, floating truth seeker orbs",
+  sasuke: "Sasuke Uchiha Rinnegan and Sharingan, purple Susanoo ribcage aura, sword of kusanagi, black cloak",
+  kakashi: "Kakashi Hatake, silver hair, mask, Sharingan eye exposed, Chidori lightning in hand, Jonin vest",
+  itachi: "Itachi Uchiha, Akatsuki cloak with red clouds, Sharingan eyes, crows flying around, mysterious",
+  sakura: "Sakura Haruno, pink hair, Byakugou seal on forehead, red outfit, punching ground with impact",
+  hinata: "Hinata Hyuga, Byakugan eyes, long dark blue hair, purple jacket, gentle expression, Twin Lion Fists aura",
+  jiraiya: "Jiraiya Sage Mode, white spiky mane, red markings on face, sitting on giant toad, scroll on back",
+
+  // One Piece
+  luffy: "Monkey D. Luffy Gear 5 Nika, white hair and clothes, purple sash, laughing crazily, drum of liberation effects",
+  zoro: "Roronoa Zoro, three swords style, green aura, scarred eye, bandana on head, demonic Enma aura",
+  sanji: "Vinsmoke Sanji, Ifrit Jambe blue fire on leg, black suit, smoking cigarette, blonde hair covering one eye",
+  nami: "Nami from One Piece, long orange hair, navigator outfit, holding Clima Tact, lightning effects",
+  shanks: "Red-Haired Shanks, scar over eye, black cape, holding Gryphon sword, intense Conqueror Haki aura",
+  law: "Trafalgar Law, spotted hat, nodachi sword, Room blue sphere effect, tattoos on fingers",
+  ace: "Portgas D. Ace, fire fist, cowboy hat with beads, shirtless, Whitebeard tattoo on back",
+
+  // Demon Slayer
+  tanjiro: "Tanjiro Kamado, Sun Breathing Hinokami Kagura, fire sword effect, checkered haori, hanafuda earrings",
+  nezuko: "Nezuko Kamado, bamboo muzzle, long black hair orange tips, pink kimono, cute demon eyes, creating pink fire",
+  zenitsu: "Zenitsu Agatsuma, sleeping with snot bubble, Thunder Breathing lightning flash, yellow haori",
+  inosuke: "Inosuke Hashibira, boar mask heading, dual serrated swords, shirtless, Beast Breathing blue aura",
+  rengoku: "Kyojuro Rengoku, Flame Breathing, enthusiastic smile, bright yellow and red hair, fire tiger aura",
+  shinobu: "Shinobu Kocho, Insect Breathing, purple butterfly aura, haori with butterfly pattern, holding rapier",
+
+  // Jujutsu Kaisen
+  gojo: "Satoru Gojo, white hair, blindfold removed showing blue Six Eyes, Infinity Void domain background",
+  yuji: "Itadori Yuji, pink hair, black uniform with red hood, blue cursed energy on fists, divergent fist",
+  megumi: "Megumi Fushiguro, summoning Divine Dog, black shadows, hand sign for domain expansion",
+  nobara: "Nobara Kugisaki, holding hammer and nails, straw doll, confident smirk, crazy expression",
+  sukuna: "Ryomen Sukuna, Yuji's body with tattoos, four eyes open, Malevolent Shrine background, evil grin",
+
+  // Others
+  saitama: "Saitama One Punch Man, bald head, yellow suit, white cape, red gloves, serious punch face",
+  deku: "Izuku Midoriya Deku, green lightning Full Cowl 100%, vigilante costume damage, determined eyes",
+  makima: "Makima Chainsaw Man, pink-red hair, hypnotic yellow ringed eyes, business suit, controlling chains",
+  denji: "Chainsaw Man Denji, chainsaw head and arms, blood splatters, white shirt and tie, urban chaos",
+  power: "Power Chainsaw Man, blood horns, messy blonde hair, blue jacket, creating blood hammer",
+  eren: "Eren Yeager Season 4, man bun, green eyes, titan transformation marks, founding titan ribcage background",
+  mikasa: "Mikasa Ackerman Season 4, black battle gear, red scarf, holding thunder spears, cold expression",
+  levi: "Levi Ackerman, bloodied face, spinning attack with ODM gear, green scout cape, forest of giant trees",
+  elric: "Edward Elric, blond braid, red coat, automail arm transmutation circle, alchemy sparks",
+  light: "Light Yagami, holding Death Note, red eyes effect, Ryuk shadow behind him, dramatic lighting",
+  killua: "Killua Zoldyck, Godspeed mode, white hair, blue electricity aura, assassin eyes",
+  gon: "Gon Freecss, green outfit, holding fishing rod, Jajanken orange aura charging",
+  sailormoon: "Sailor Moon Usagi Tsukino, magical girl outfit, blonde twin tails, tiara, sparkly moon background",
 };
 
 // === ESTILOS ===

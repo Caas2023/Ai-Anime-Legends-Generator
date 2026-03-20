@@ -2,15 +2,12 @@
 
 import { supabase } from "@/lib/supabase";
 
-// === CONFIGURAÇÃO (baseado na doc oficial gen.pollinations.ai) ===
-const POLLINATIONS_MODEL = "flux"; // modelos: flux, turbo, gptimage, zimage, seedream, nanobanana
+// === CONFIGURAÇÃO ===
+const POLLINATIONS_MODEL_PRIMARY = "flux";
+const POLLINATIONS_MODEL_FALLBACK = "turbo";
 const TIMEOUT_MS = 45000;
 const MAX_PROMPT_LENGTH = 500;
 const POLLINATIONS_KEY = process.env.POLLINATIONS_API_KEY;
-const AIRFORCE_KEY = process.env.AIRFORCE_API_KEY;
-const AIRFORCE_COOLDOWN_MS = 61000;
-
-let lastAirforceCall = 0;
 
 // === PERSONAGENS ===
 const CHARACTERS: Record<string, string> = {
@@ -83,20 +80,20 @@ const STYLES: Record<string, string> = {
 };
 
 // === IA DE TEXTO (endpoint oficial: /v1/chat/completions) ===
-async function getDynamicPrompt(characterLabel: string, styleLabel: string, customDetails: string): Promise<string | null> {
+async function getDynamicPrompt(
+  characterLabel: string,
+  styleLabel: string,
+  customDetails: string
+): Promise<string | null> {
   try {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 8000);
 
-    // Usa o endpoint correto da API com autenticação
     const headers: Record<string, string> = { "Content-Type": "application/json" };
-    let url = "https://gen.pollinations.ai/v1/chat/completions";
+    const url = "https://gen.pollinations.ai/v1/chat/completions";
 
     if (POLLINATIONS_KEY) {
       headers["Authorization"] = `Bearer ${POLLINATIONS_KEY}`;
-    } else {
-      // Sem chave, usa o endpoint simples de texto (anônimo)
-      url = "https://gen.pollinations.ai/v1/chat/completions";
     }
 
     const response = await fetch(url, {
@@ -107,7 +104,8 @@ async function getDynamicPrompt(characterLabel: string, styleLabel: string, cust
         model: "openai",
         messages: [
           {
-            role: "system", content: `You are a creative anime art director who interprets user requests intelligently.
+            role: "system",
+            content: `You are a creative anime art director who interprets user requests intelligently.
 
 RULES:
 1. BASE + STYLE: Start with the selected character and style.
@@ -116,11 +114,17 @@ RULES:
    - "as X" or "wearing X clothes" -> ONE CHARACTER doing cosplay. (e.g., "Naruto as Goku" = Naruto in orange gi)
    - "in X place" -> ONE CHARACTER in a specific background. (e.g., "Naruto in Paris")
 3. If no Extra is given, create a unique epic scene.
-4. Output ONLY the English image prompt (max 60 words). No notes.` },
-          { role: "user", content: `BASE CHARACTER: ${characterLabel}\nVISUAL STYLE: ${styleLabel}\nEXTRA INSTRUCTIONS: ${customDetails || 'Create a unique epic random scene with this character'}` }
+4. Output ONLY the English image prompt (max 60 words). No notes.`,
+          },
+          {
+            role: "user",
+            content: `BASE CHARACTER: ${characterLabel}\nVISUAL STYLE: ${styleLabel}\nEXTRA INSTRUCTIONS: ${
+              customDetails || "Create a unique epic random scene with this character"
+            }`,
+          },
         ],
-        seed: Math.floor(Math.random() * 999999)
-      })
+        seed: Math.floor(Math.random() * 999999),
+      }),
     });
 
     clearTimeout(timeout);
@@ -129,7 +133,6 @@ RULES:
       const json = await response.json();
       let text = json?.choices?.[0]?.message?.content?.trim() || "";
 
-      // Limpa qualquer lixo
       text = sanitizePrompt(text);
 
       if (text.length > MAX_PROMPT_LENGTH) text = text.substring(0, MAX_PROMPT_LENGTH);
@@ -144,9 +147,7 @@ RULES:
   return null;
 }
 
-/**
- * Limpa o prompt removendo avisos, notas e lixo injetado pela API
- */
+// === SANITIZA PROMPT ===
 function sanitizePrompt(text: string): string {
   const warningPatterns = [
     /⚠️[^]*?(?=\n\n|$)/gi,
@@ -166,23 +167,35 @@ function sanitizePrompt(text: string): string {
 
   cleaned = cleaned.replace(/\n{3,}/g, "\n").trim();
 
-  if ((cleaned.startsWith('"') && cleaned.endsWith('"')) || (cleaned.startsWith("'") && cleaned.endsWith("'"))) {
+  if (
+    (cleaned.startsWith('"') && cleaned.endsWith('"')) ||
+    (cleaned.startsWith("'") && cleaned.endsWith("'"))
+  ) {
     cleaned = cleaned.slice(1, -1).trim();
   }
 
   return cleaned;
 }
 
-// === API PRINCIPAL: POLLINATIONS (endpoint oficial: /image/{prompt}) ===
-async function fetchFromPollinations(prompt: string, width: number, height: number): Promise<{ buffer: Buffer; contentType: string } | null> {
+// ============================================================
+// ✅ ÚNICA API: POLLINATIONS
+// Tenta modelo primário (flux), depois fallback (turbo)
+// SEM dependência de APIs externas
+// ============================================================
+async function fetchFromPollinations(
+  prompt: string,
+  width: number,
+  height: number,
+  model: string = POLLINATIONS_MODEL_PRIMARY
+): Promise<{ buffer: Buffer; contentType: string } | null> {
   const truncated = prompt.substring(0, MAX_PROMPT_LENGTH);
   const encoded = encodeURIComponent(truncated);
   const seed = Math.floor(Math.random() * 999999);
 
-  // URL oficial: https://gen.pollinations.ai/image/{prompt}
-  const url = `https://gen.pollinations.ai/image/${encoded}?model=${POLLINATIONS_MODEL}&seed=${seed}&width=${width}&height=${height}&nologo=true`;
+  // ✅ CORREÇÃO: removido &nologo=true para respeitar o branding da Pollinations
+  const url = `https://gen.pollinations.ai/image/${encoded}?model=${model}&seed=${seed}&width=${width}&height=${height}`;
 
-  console.log(`[POLLINATIONS] Chamando: model=${POLLINATIONS_MODEL}, seed=${seed}, ${width}x${height}`);
+  console.log(`[POLLINATIONS] model=${model}, seed=${seed}, ${width}x${height}`);
 
   try {
     const controller = new AbortController();
@@ -196,7 +209,7 @@ async function fetchFromPollinations(prompt: string, width: number, height: numb
     const response = await fetch(url, { method: "GET", signal: controller.signal, headers });
     clearTimeout(timeoutId);
 
-    console.log(`[POLLINATIONS] Resposta: ${response.status} | CT: ${response.headers.get("content-type")}`);
+    console.log(`[POLLINATIONS] Status: ${response.status} | CT: ${response.headers.get("content-type")}`);
 
     if (response.ok) {
       const ct = response.headers.get("content-type") || "";
@@ -206,108 +219,21 @@ async function fetchFromPollinations(prompt: string, width: number, height: numb
       }
     }
 
-    console.warn(`[POLLINATIONS] Falhou: ${response.status}`);
+    console.warn(`[POLLINATIONS] Falhou com model=${model}: ${response.status}`);
   } catch (e: any) {
     console.warn(`[POLLINATIONS] Erro: ${e?.name || e}`);
   }
   return null;
 }
 
-// === API RESERVA: AIRFORCE (rate limit: 61s) ===
-async function fetchFromAirforce(prompt: string, width: number, height: number): Promise<{ buffer: Buffer; contentType: string } | null> {
-  if (!AIRFORCE_KEY) {
-    console.warn("[AIRFORCE ERROR] Chave API não configurada no servidor (verifique as variáveis de ambiente).");
-    return null;
-  }
-
-  const now = Date.now();
-  const timeSinceLastCall = now - lastAirforceCall;
-  if (timeSinceLastCall < AIRFORCE_COOLDOWN_MS) {
-    const waitTime = Math.ceil((AIRFORCE_COOLDOWN_MS - timeSinceLastCall) / 1000);
-    console.warn(`[AIRFORCE] Rate limit ativo. Aguarde ${waitTime}s.`);
-    return null;
-  }
-
-  let size = "1024x1024";
-  if (width > height) size = "1024x768";
-  else if (height > width) size = "768x1024";
-
-  console.log(`[AIRFORCE] Iniciando geração... Modelo: plutogen-o1 | Tamanho: ${size} | Prompt: ${prompt.substring(0, 50)}...`);
-
-  try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
-
-    const response = await fetch("https://api.airforce/v1/images/generations", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${AIRFORCE_KEY}`,
-        "Content-Type": "application/json"
-      },
-      signal: controller.signal,
-      body: JSON.stringify({
-        model: "plutogen-o1",
-        prompt: prompt.substring(0, MAX_PROMPT_LENGTH),
-        n: 1,
-        size: size,
-        response_format: "url",
-        sse: true
-      })
-    });
-
-    clearTimeout(timeoutId);
-    lastAirforceCall = Date.now();
-
-    if (!response.ok) {
-      console.error(`[AIRFORCE ERROR] Status: ${response.status} | Texto: ${response.statusText}`);
-      try {
-        const errorBody = await response.text();
-        console.error(`[AIRFORCE BODY] ${errorBody.substring(0, 200)}`);
-      } catch { }
-      return null;
-    }
-
-    const text = await response.text();
-    let imageUrl: string | null = null;
-
-    // Tenta encontrar URL no SSE ou JSON
-    if (text.includes("http")) {
-      const match = text.match(/https?:\/\/[^\s"']+/);
-      if (match) imageUrl = match[0];
-    }
-
-    if (!imageUrl) {
-      // Parsing manual linha a linha (fallback)
-      for (const line of text.split("\n")) {
-        if (line.includes("url")) {
-          const match = line.match(/"url"\s*:\s*"([^"]+)"/);
-          if (match) imageUrl = match[1];
-        }
-      }
-    }
-
-    if (imageUrl) {
-      console.log(`[AIRFORCE] Sucesso! Baixando imagem de: ${imageUrl}`);
-      const imgResponse = await fetch(imageUrl);
-      if (imgResponse.ok) {
-        const ct = imgResponse.headers.get("content-type") || "image/png";
-        const arrayBuffer = await imgResponse.arrayBuffer();
-        return { buffer: Buffer.from(arrayBuffer), contentType: ct };
-      }
-    }
-
-    console.warn("[AIRFORCE ERROR] Resposta recebida mas nenhuma URL de imagem encontrada.");
-    console.debug(`[AIRFORCE RAW] ${text.substring(0, 100)}...`);
-
-  } catch (e: any) {
-    console.error(`[AIRFORCE EXCEPTION] ${e?.message || e}`);
-    lastAirforceCall = Date.now();
-  }
-  return null;
-}
-
 // === FUNÇÃO PRINCIPAL ===
-export async function generateImage(characterId: string, styleId: string, customPrompt?: string, width: number = 768, height: number = 1024) {
+export async function generateImage(
+  characterId: string,
+  styleId: string,
+  customPrompt?: string,
+  width: number = 768,
+  height: number = 1024
+) {
   try {
     const characterLabel = CHARACTERS[characterId] || characterId;
     const styleLabel = STYLES[styleId] || styleId;
@@ -315,67 +241,80 @@ export async function generateImage(characterId: string, styleId: string, custom
     console.log(`\n[GEN] ========================================`);
     console.log(`[GEN] ${characterId} | ${styleId} | ${new Date().toISOString()}`);
 
-    // 1. Prompt dinâmico via IA de texto
+    // 1. Prompt dinâmico via IA de texto (Pollinations)
     let finalPrompt = await getDynamicPrompt(characterLabel, styleLabel, customPrompt || "");
 
     // 2. Fallback: prompt fixo
     if (!finalPrompt) {
-      finalPrompt = `anime masterpiece, ${characterLabel}, ${styleLabel}, ${customPrompt || ''}, detailed face, cinematic`;
+      finalPrompt = `anime masterpiece, ${characterLabel}, ${styleLabel}, ${
+        customPrompt || ""
+      }, detailed face, cinematic`;
     }
 
     console.log(`[GEN] Prompt: ${finalPrompt.substring(0, 100)}...`);
 
-    // 3. Tenta POLLINATIONS primeiro
-    console.log("[GEN] >>> Tentando Pollinations...");
-    let result = await fetchFromPollinations(finalPrompt, width, height);
+    // 3. Tenta modelo primário: flux
+    console.log("[GEN] >>> Tentando Pollinations (flux)...");
+    let result = await fetchFromPollinations(finalPrompt, width, height, POLLINATIONS_MODEL_PRIMARY);
 
-    // 4. Retry com prompt simples
+    // 4. Retry com prompt simplificado no mesmo modelo
     if (!result) {
-      console.log("[GEN] >>> Retry Pollinations (prompt simples)...");
-      const simplePrompt = `anime art, ${CHARACTERS[characterId] || 'anime character'}, ${STYLES[styleId] || 'high quality'}`;
-      result = await fetchFromPollinations(simplePrompt, width, height);
+      console.log("[GEN] >>> Retry Pollinations flux (prompt simples)...");
+      const simplePrompt = `anime art, ${CHARACTERS[characterId] || "anime character"}, ${
+        STYLES[styleId] || "high quality"
+      }`;
+      result = await fetchFromPollinations(simplePrompt, width, height, POLLINATIONS_MODEL_PRIMARY);
       if (result) finalPrompt = simplePrompt;
     }
 
-    // 5. Fallback AIRFORCE
+    // 5. Retry com modelo alternativo: turbo
     if (!result) {
-      console.log("[GEN] >>> Pollinations indisponível. Tentando AirForce...");
-      result = await fetchFromAirforce(finalPrompt, width, height);
+      console.log("[GEN] >>> Retry Pollinations (turbo)...");
+      result = await fetchFromPollinations(finalPrompt, width, height, POLLINATIONS_MODEL_FALLBACK);
     }
 
-    // 6. Tudo falhou
+    // 6. Último retry: turbo + prompt simples
     if (!result) {
-      const now = Date.now();
-      const timeSince = now - lastAirforceCall;
-      if (timeSince < AIRFORCE_COOLDOWN_MS && AIRFORCE_KEY) {
-        const waitSec = Math.ceil((AIRFORCE_COOLDOWN_MS - timeSince) / 1000);
-        return { success: false, error: `Servidores ocupados. API reserva disponível em ${waitSec}s. Tente novamente.` };
-      }
-      return { success: false, error: "Servidores de IA indisponíveis. Aguarde 1-2 min e tente novamente." };
+      console.log("[GEN] >>> Último retry Pollinations turbo (prompt simples)...");
+      const simplePrompt = `anime art, ${CHARACTERS[characterId] || "anime character"}, ${
+        STYLES[styleId] || "high quality"
+      }`;
+      result = await fetchFromPollinations(simplePrompt, width, height, POLLINATIONS_MODEL_FALLBACK);
+      if (result) finalPrompt = simplePrompt;
     }
 
-    // 7. Converte para base64
+    // 7. Tudo falhou
+    if (!result) {
+      return {
+        success: false,
+        error: "Servidores da Pollinations indisponíveis. Aguarde 1-2 minutos e tente novamente.",
+      };
+    }
+
+    // 8. Converte para base64
     const base64 = result.buffer.toString("base64");
     const mimeType = result.contentType.includes("png") ? "image/png" : "image/jpeg";
     const dataUrl = `data:${mimeType};base64,${base64}`;
 
     console.log(`[GEN] ✅ OK: ${result.buffer.length} bytes`);
 
-    // 8. Salva no Supabase (opcional)
+    // 9. Salva no Supabase (opcional)
     if (supabase) {
       try {
         const fileName = `${characterId}-${Date.now()}.jpg`;
         const { error: uploadError } = await supabase.storage
-          .from('gallery')
-          .upload(fileName, result.buffer, { contentType: 'image/jpeg' });
+          .from("gallery")
+          .upload(fileName, result.buffer, { contentType: "image/jpeg" });
 
         if (!uploadError) {
-          const { data: { publicUrl } } = supabase.storage.from('gallery').getPublicUrl(fileName);
-          await supabase.from('generations').insert({
+          const {
+            data: { publicUrl },
+          } = supabase.storage.from("gallery").getPublicUrl(fileName);
+          await supabase.from("generations").insert({
             image_url: publicUrl,
             character_id: characterId,
             style_id: styleId,
-            prompt: finalPrompt
+            prompt: finalPrompt,
           });
           return { success: true, imageUrl: publicUrl, prompt: finalPrompt };
         }
@@ -385,7 +324,6 @@ export async function generateImage(characterId: string, styleId: string, custom
     }
 
     return { success: true, imageUrl: dataUrl, prompt: finalPrompt };
-
   } catch (error: any) {
     console.error("[GEN FATAL]", error?.message || error);
 

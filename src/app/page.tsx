@@ -27,12 +27,16 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { generateImage, composePrompt } from "@/actions/generate";
-import { Gallery } from "@/components/gallery";
 import { useGallery } from "@/hooks/use-gallery";
 import { useSound } from "@/hooks/use-sound";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
-import { CommunityFeed } from "@/components/community-feed";
+import dynamic from "next/dynamic";
+
+// Otimização de Performance: Lazy loading de componentes pesados fora do viewport inicial
+const CommunityFeed = dynamic(() => import("@/components/community-feed").then(mod => mod.CommunityFeed), { ssr: false });
+const Gallery = dynamic(() => import("@/components/gallery").then(mod => mod.Gallery), { ssr: false });
+
 
 const IMAGE_SIZES = [
   { id: "portrait", label: "Retrato (3:4)", width: 768, height: 1024, icon: "📱" },

@@ -40,6 +40,7 @@ export function CharacterSelector({ value, onChange, disabled }: CharacterSelect
               key={char.id}
               onClick={() => onChange(char.id)}
               disabled={disabled}
+              aria-label={`Selecionar herói ${char.label}`}
               className={cn(
                 "flex-none w-16 xl:w-full p-1.5 celestial-card border transition-all duration-500 group relative overflow-hidden snap-center",
                 isSelected
@@ -57,7 +58,7 @@ export function CharacterSelector({ value, onChange, disabled }: CharacterSelect
 
                   <SafeImage 
                     src={photoUrl} 
-                    alt={char.label} 
+                    alt="" 
                     fallbackName={char.label}
                     className="w-full h-full object-cover" 
                   />

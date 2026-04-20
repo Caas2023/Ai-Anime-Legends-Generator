@@ -1,47 +1,50 @@
 @import "tailwindcss";
 
 :root {
-  /* arquiteto-principal: Sistema de Design Ergonômico (Antigravity v4.0) */
+  /* arquiteto-principal: Sistema de Design Ergonômico (HSL Architecture v5.6) */
   --base-weight: 400;
   
-  /* APCA Light Palette */
-  --bg-app: #fcfcfc;
-  --bg-surface: #ffffff;
-  --text-primary: #121212;
-  --text-secondary: #4a4a4a;
-  --accent: #10b981;
-  --accent-glow: rgba(16, 185, 129, 0.2);
+  /* [Passo 1 & 2] Camada 1: Backgrounds (HSL) */
+  --bg-app: hsl(0, 0%, 99%);     /* Off-white p/ mitigar fadiga */
+  --bg-surface: hsl(0, 0%, 100%); /* Puro p/ superfícies secundárias */
+
+  /* Camada 2: Textos (HSL) */
+  --text-primary: hsl(220, 10%, 10%);   /* Quase preto ergonômico */
+  --text-secondary: hsl(220, 10%, 35%); /* Hierarquia visual secundária */
+
+  /* Camada 3: Primárias/Ação (HSL) */
+  --accent: hsl(161, 84%, 39%);      /* Esmeralda Industrial */
+  --accent-glow: hsla(161, 84%, 39%, 0.2);
   
-  --border: rgba(0, 0, 0, 0.08);
-  --shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+  --border: hsla(0, 0%, 0%, 0.08);
+  --shadow: 0 4px 24px hsla(0, 0%, 0%, 0.04);
 }
 
 .dark-theme {
-  /* APCA Dark Palette (Mitigação de Halation: #121212 foundation) */
-  --bg-app: #121212;
-  --bg-surface: #1e1e1e;
+  /* [Passo 3] Modo Escuro: Engenharia de Fadiga Visual */
   
-  /* APCA Contraste Alvo: Lc 75 para primários, Lc 60 para secundários (Acessibilidade 100%) */
-  --text-primary: #f8fafc;
-  --text-secondary: #cbd5e1;
+  /* Camada 1: Backgrounds (Evitando HSL 0,0,0) */
+  --bg-app: hsl(220, 12%, 7%);     /* Cinza Antracite p/ evitar Halation */
+  --bg-surface: hsl(220, 12%, 11%); /* Cartões mais claros que o fundo */
   
-  --accent: #6ee7b7; /* Esmeralda 300 - Brilho Extremo (Contraste 12:1) */
-  --accent-glow: rgba(110, 231, 183, 0.4);
+  /* Camada 2: Textos (Off-white p/ evitar Radiação Visual) */
+  --text-primary: hsl(210, 40%, 98%);
+  --text-secondary: hsl(214, 25%, 80%);
   
-  --border: rgba(255, 255, 255, 0.15);
+  /* Camada 3: Ação (Dessaturação p/ Modo Escuro) */
+  --accent: hsl(158, 70%, 65%); /* Menos saturado p/ não vibre no escuro */
+  --accent-glow: hsla(158, 70%, 65%, 0.4);
+  
+  --border: hsla(0, 0%, 100%, 0.12);
+  --muted-foreground: hsl(240, 5%, 65%); 
 
-
-
-  /* [Scientific Change] Muted foreground for labels e textos técnicos */
-  --muted-foreground: #a1a1aa; 
-
-  /* [A11y Change] Support for @prefers-contrast */
+  /* [Passo 5] Acessibilidade: Suporte a Contraste Mínimo do Sistema */
   @media (prefers-contrast: more) {
-    --text-primary: #ffffff;
-    --text-secondary: #f1f5f9;
-    --accent: #10b981;
-    --border: rgba(255, 255, 255, 0.4);
-    --bg-surface: #000000;
+    --text-primary: hsl(0, 0%, 100%);
+    --text-secondary: hsl(0, 0%, 95%);
+    --accent: hsl(161, 84%, 39%);
+    --border: hsla(0, 0%, 100%, 0.4);
+    --bg-surface: hsl(0, 0%, 0%);
   }
 }
 
@@ -52,9 +55,9 @@
   --color-card: var(--bg-surface);
   --color-border: var(--border);
   
-  --radius-lg: 2rem;
-  --radius-md: 1.5rem;
-  --radius-sm: 1rem;
+  --radius-lg: 2.5rem;
+  --radius-md: 1.75rem;
+  --radius-sm: 1.25rem;
 }
 
 @layer base {
@@ -66,18 +69,16 @@
     background-color: var(--bg-app);
     color: var(--text-primary);
     font-family: var(--font-inter), system-ui, sans-serif;
-    /* Mitigação de Halation: Peso reduzido 15% e letter-spacing compensatório no modo dark */
+    /* [Ergonomia] Compensação de peso no modo claro */
     font-variation-settings: "wght" var(--base-weight);
     transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
                 color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .dark-theme body {
-    /* Engenharia Biofísica: Redução de peso para anular irradiação luminosa */
+    /* [Re-engenharia de HALATION] Redução de peso visual p/ texto branco */
     --base-weight: 340; 
-    letter-spacing: 0.02ch; /* Compensação de contração visual */
-    
-    /* Melhoria de Rendering para WebKit/macOS */
+    letter-spacing: 0.02ch; 
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -90,32 +91,27 @@
 }
 
 @layer components {
-  /* Arquitetura de Elevação Técnica */
   .celestial-card {
     @apply rounded-3xl transition-all duration-300;
     background-color: var(--bg-surface);
     border: 1px solid var(--border);
-    /* Biologia da Visão: Impedir vazamento do background sob bordas alpha */
     background-clip: padding-box; 
   }
 
   .dark-theme .celestial-card {
-    /* Elevação no Escuro: Proibido sombras cinzas. Usa Glow Interno Afiado */
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05); 
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    /* [Deep Design] Glow interno sutil p/ volume em baixa luminosidade */
+    box-shadow: inset 0 1px 0 hsla(0, 0%, 100%, 0.05); 
+    box-shadow: 0 8px 32px hsla(0, 0%, 0%, 0.4);
   }
 
-  /* Hierarquia de Texto APCA */
   .text-primary { color: var(--text-primary); }
   .text-secondary { color: var(--text-secondary); }
 
-  /* Comportamento de Média */
   img {
     transition: filter 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .dark-theme img {
-    /* Evitar clarão ofuscante (Pupillary Flash Prevention) */
     filter: brightness(0.85) grayscale(10%);
   }
 
@@ -123,7 +119,6 @@
     filter: brightness(1) grayscale(0%);
   }
 
-  /* Ícones Lucide/SVG herdar cor nativa */
   svg {
     fill: currentColor;
     stroke: currentColor;
@@ -138,7 +133,6 @@
   }
 }
 
-/* A11y Utilities: Ocultação visual mantendo suporte a leitores de tela */
 .sr-only {
   position: absolute;
   width: 1px;
@@ -151,42 +145,40 @@
   border-width: 0;
 }
 
-/* [Especialista Frontend] Suporte a Temas de Alto Contraste do Sistema */
 @media (prefers-contrast: more) {
   .glass-panel {
-    background: #000 !important;
+    background: hsl(0, 0%, 0%) !important;
     backdrop-filter: none !important;
-    border: 1px solid #fff !important;
+    border: 1px solid hsl(0, 0%, 100%) !important;
     box-shadow: none !important;
   }
   
   .celestial-card {
-    background: #000 !important;
-    border: 2px solid #fff !important;
+    background: hsl(0, 0%, 0%) !important;
+    border: 2px solid hsl(0, 0%, 100%) !important;
     box-shadow: none !important;
   }
 
   .text-glow {
     text-shadow: none !important;
-    color: #fff !important;
+    color: hsl(0, 0%, 100%) !important;
   }
   
   .text-primary, .text-foreground {
-    color: #fff !important;
+    color: hsl(0, 0%, 100%) !important;
   }
 
   .text-secondary, .text-muted-foreground {
-    color: #f1f5f9 !important;
+    color: hsl(0, 0%, 95%) !important;
   }
 }
 
-/* Skip Link: Essencial para navegação por teclado (web.dev/Design) */
 .skip-link {
   position: absolute;
   top: -100px;
   left: 0;
   background: var(--accent);
-  color: #000;
+  color: hsl(0, 0%, 0%);
   padding: 1rem 2rem;
   z-index: 9999;
   font-weight: 900;
@@ -201,10 +193,9 @@
   top: 0;
 }
 
-/* Tipografia Ergonomica (web.dev/Typography) */
 p {
   line-height: 1.6;
-  font-size: 1rem; /* Define base rem usage */
+  font-size: 1rem; 
 }
 
 .max-readable {

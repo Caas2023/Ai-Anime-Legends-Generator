@@ -6,6 +6,8 @@ import { Palette, Box, Film, Camera, Zap, FileImage, Droplets, Ghost } from "luc
 import { ART_STYLES, CHARACTERS } from "@/lib/constants";
 import { LucideIcon } from "lucide-react";
 
+export { ART_STYLES, CHARACTERS };
+
 interface ModelSelectorProps {
   value: string;
   onChange: (value: string) => void;
@@ -22,8 +24,6 @@ const STYLE_ICONS: Record<string, LucideIcon> = {
   watercolor: Droplets,
   dark: Palette,
 };
-
-export { ART_STYLES, CHARACTERS };
 
 export function ModelSelector({ value, onChange, disabled }: ModelSelectorProps) {
   return (

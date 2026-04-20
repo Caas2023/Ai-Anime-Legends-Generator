@@ -10,6 +10,7 @@ interface CharacterSelectorProps {
 }
 
 import { CHARACTERS } from "@/lib/constants";
+export { CHARACTERS };
 
 const colorClasses: Record<string, { active: string; hover: string; icon: string }> = {
   orange: { active: "border-orange-500 bg-orange-500/20 text-orange-100", hover: "hover:border-orange-500/50", icon: "text-orange-400" },

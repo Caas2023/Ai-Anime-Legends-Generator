@@ -5,8 +5,9 @@ import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { Wand2, Download, RefreshCw, Sparkles, AlertCircle, Instagram, Facebook, MessageCircle, Share2, Github, Copy, Check, Video, Play, Settings, ChevronDown } from "lucide-react";
 
-import { CharacterSelector, CHARACTERS } from "@/components/character-selector";
-import { ModelSelector, ART_STYLES } from "@/components/model-selector";
+import { CharacterSelector } from "@/components/character-selector";
+import { ModelSelector } from "@/components/model-selector";
+import { CHARACTERS, ART_STYLES } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";

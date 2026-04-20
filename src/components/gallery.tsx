@@ -8,8 +8,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { GalleryItem } from "@/hooks/use-gallery";
 import { cn } from "@/lib/utils";
-import { CHARACTERS } from "@/components/character-selector";
-import { ART_STYLES } from "@/components/model-selector";
+import { CHARACTERS, ART_STYLES } from "@/lib/constants";
 
 interface GalleryProps {
     images: GalleryItem[];

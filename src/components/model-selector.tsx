@@ -36,6 +36,7 @@ export function ModelSelector({ value, onChange, disabled }: ModelSelectorProps)
               key={style.id}
               onClick={() => onChange(style.id)}
               disabled={disabled}
+              aria-label={`Selecionar estilo ${style.label}`}
               className={cn(
                 "flex flex-col items-center justify-center p-1.5 celestial-card border transition-all duration-300 relative group",
                 isSelected

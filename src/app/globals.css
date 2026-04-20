@@ -25,10 +25,11 @@
   --text-primary: #f8fafc;
   --text-secondary: #cbd5e1;
   
-  --accent: #34d399; /* Esmeralda 400 - Contraste superior a 9:1 */
-  --accent-glow: rgba(52, 211, 153, 0.4);
+  --accent: #6ee7b7; /* Esmeralda 300 - Brilho Extremo (Contraste 12:1) */
+  --accent-glow: rgba(110, 231, 183, 0.4);
   
   --border: rgba(255, 255, 255, 0.15);
+
 
 
   /* [Scientific Change] Muted foreground for labels e textos técnicos */

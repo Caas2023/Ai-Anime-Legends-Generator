@@ -313,7 +313,9 @@ export default function Home() {
                                 {['flux', 'flux-realism', 'openai', 'any-dark'].map(m => (
                                     <button
                                         key={m}
-                                        onClick={() => setImageModel(m)}
+                                        onClick={() => onChange(style.id)}
+                                        disabled={disabled}
+                                        aria-label={`Selecionar estilo ${style.label}`}
                                         className={cn(
                                             "px-3 py-2 rounded-xl border text-[9px] font-black uppercase tracking-tighter transition-all",
                                             imageModel === m ? "bg-primary border-transparent text-primary-foreground" : "bg-foreground/5 border-border text-foreground/40 hover:text-foreground"
@@ -419,10 +421,11 @@ export default function Home() {
                   animate={{ opacity: 1, x: 0 }}
                   className="lg:col-span-3 xl:col-span-2 space-y-6"
                 >
-                    <div className="flex items-center gap-4 group">
-                    <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-background font-black text-sm shadow-[0_0_20px_var(--accent-glow)]">1</div>
+                    <div className="flex items-center gap-4 group" aria-label="Etapa 1: Seleção do Herói">
+                    <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-background font-black text-sm shadow-[0_0_20px_var(--accent-glow)]" aria-hidden="true">1</div>
                     <h2 className="text-xl font-black tracking-tighter uppercase text-primary">O Herói</h2>
                   </div>
+
 
 
                   <div className="celestial-card p-1 overflow-hidden">
@@ -441,10 +444,11 @@ export default function Home() {
                   className="lg:col-span-5 xl:col-span-6 space-y-5"
                 >
                   <div className="space-y-3">
-                    <div className="flex items-center gap-2 group">
-                      <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-background font-black text-[10px] shadow-[0_0_15px_var(--accent-glow)]">2</div>
+                    <div className="flex items-center gap-2 group" aria-label="Etapa 2: Escolha do Estilo">
+                      <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-background font-black text-[10px] shadow-[0_0_15px_var(--accent-glow)]" aria-hidden="true">2</div>
                       <h2 className="text-sm font-black tracking-tighter uppercase text-primary">Estilos</h2>
                     </div>
+
 
 
                     <div className="celestial-card p-3">
@@ -458,10 +462,11 @@ export default function Home() {
                   </div>
 
                   <div className="space-y-3">
-                    <div className="flex items-center gap-2 group">
-                      <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-background font-black text-[10px] shadow-[0_0_15px_var(--accent-glow)]">3</div>
+                    <div className="flex items-center gap-2 group" aria-label="Etapa 3: Razão de Aspecto">
+                      <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-background font-black text-[10px] shadow-[0_0_15px_var(--accent-glow)]" aria-hidden="true">3</div>
                       <h2 className="text-sm font-black tracking-tighter uppercase text-primary">Tamanhos</h2>
                     </div>
+
 
 
                     <div className="flex flex-wrap gap-1.5 celestial-card p-1.5 border-border">
@@ -485,10 +490,11 @@ export default function Home() {
                   </div>
 
                   <div className="space-y-3">
-                    <div className="flex items-center gap-2 group">
-                      <div className="w-8 h-8 rounded-full bg-accent flex items-center justify-center text-background font-black text-[10px] shadow-[0_0_15px_var(--accent-glow)]">4</div>
+                    <div className="flex items-center gap-2 group" aria-label="Etapa 4: Detalhes e Invocação">
+                      <div className="w-8 h-8 rounded-full bg-accent flex items-center justify-center text-background font-black text-[10px] shadow-[0_0_15px_var(--accent-glow)]" aria-hidden="true">4</div>
                       <h2 className="text-sm font-black tracking-tighter uppercase text-primary">Detalhes</h2>
                     </div>
+
 
 
                     <div className="relative group/input">
@@ -686,12 +692,12 @@ export default function Home() {
         </div>
 
         {/* Global Navigation Tabs */}
-        <div className="fixed bottom-0 left-0 right-0 h-16 glass-panel border-t border-white/5 flex items-center justify-center gap-12 z-[100] bg-black/80 backdrop-blur-3xl px-8">
+        <nav className="fixed bottom-0 left-0 right-0 h-16 glass-panel border-t border-white/5 flex items-center justify-center gap-12 z-[100] bg-black/80 backdrop-blur-3xl px-8" aria-label="Navegação Global">
           <button
             onClick={() => { setActiveTab("workstation"); play("click"); }}
             className={cn(
               "text-[9px] font-black uppercase tracking-[0.3em] transition-all flex items-center gap-2 px-6 py-2 rounded-full",
-              activeTab === "workstation" ? "text-primary bg-primary/10 shadow-[0_0_20px_rgba(16,185,129,0.2)]" : "text-white/60 hover:text-white"
+              activeTab === "workstation" ? "text-primary bg-primary/10 shadow-[0_0_20px_rgba(110,231,183,0.3)]" : "text-white/60 hover:text-white"
             )}
           >
             <Sparkles className="w-3 h-3" /> Workstation

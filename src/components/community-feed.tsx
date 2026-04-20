@@ -53,7 +53,7 @@ export function CommunityFeed() {
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      if (supabase) supabase.removeChannel(channel);
     };
   }, [fetchFeed]);
 

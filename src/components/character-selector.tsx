@@ -127,8 +127,9 @@ export function CharacterSelector({ value, onChange, disabled }: CharacterSelect
           const colors = colorClasses[char.color];
           const isSelected = value === char.id;
           
-          // Geração de foto em tempo real usando bypass nologo
-          const photoUrl = `https://image.pollinations.ai/prompt/face%20portrait%20of%20${encodeURIComponent(char.label)}%20anime%20icon?width=120&height=120&nologo=true`;
+          // Prompt simplificado e seguro para evitar bloqueios de NSFW/Violence na API
+          const safePrompt = `cute face anime icon of ${char.label} smiling`;
+          const photoUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(safePrompt)}?width=120&height=120&nologo=true&seed=42`;
 
           return (
             <button
@@ -143,8 +144,17 @@ export function CharacterSelector({ value, onChange, disabled }: CharacterSelect
                 disabled && "opacity-50 cursor-not-allowed"
               )}
             >
-              <div className={cn("w-12 h-12 lg:w-14 lg:h-14 rounded-full overflow-hidden border-2 transition-transform group-hover:scale-110", isSelected ? "border-white" : "border-white/20")}>
-                <img src={photoUrl} alt={char.label} loading="lazy" className="w-full h-full object-cover" />
+              <div className={cn("w-12 h-12 lg:w-14 lg:h-14 rounded-full overflow-hidden border-2 transition-transform group-hover:scale-110 shrink-0 bg-black/40", isSelected ? "border-white" : "border-white/20")}>
+                <img 
+                  src={photoUrl} 
+                  alt={char.label} 
+                  loading="lazy" 
+                  className="w-full h-full object-cover" 
+                  onError={(e) => {
+                    // Fallback para as iniciais caso bloqueie no Rate Limit / NSFW
+                    e.currentTarget.src = `https://ui-avatars.com/api/?name=${char.label}&background=1a1a1a&color=fff&size=120`;
+                  }}
+                />
               </div>
               <div className="text-center w-full">
                 <span className="text-xs md:text-sm font-bold block truncate w-full px-1">{char.label}</span>

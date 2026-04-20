@@ -27,10 +27,11 @@ export function SafeImage({ src, alt, className, fallbackName, onLoad }: SafeIma
   return (
     <div className={cn("relative overflow-hidden bg-black/20", className)}>
       {loading && !error && (
-        <div className="absolute inset-0 flex items-center justify-center animate-pulse bg-white/5 z-10">
-          <Sparkles className="w-5 h-5 text-white/20" />
+        <div className="absolute inset-0 flex items-center justify-center animate-pulse bg-foreground/5 z-10">
+          <Sparkles className="w-5 h-5 text-foreground/25" />
         </div>
       )}
+
       
       {error ? (
         <div className="absolute inset-0 flex flex-col items-center justify-center p-2 text-center bg-zinc-900/80">
@@ -40,17 +41,18 @@ export function SafeImage({ src, alt, className, fallbackName, onLoad }: SafeIma
             className="w-full h-full object-cover opacity-20 grayscale" 
           />
           <div className="absolute inset-0 flex flex-col items-center justify-center p-4">
-            <AlertCircle className="w-5 h-5 text-red-500/50 mb-2" />
-            <p className="text-[9px] text-white/30 uppercase font-bold tracking-tight">
+            <AlertCircle className="w-5 h-5 text-red-500/60 mb-2" />
+            <p className="text-[9px] text-foreground/65 uppercase font-bold tracking-tight">
               Imagem Não Carregou
             </p>
             <button 
                 onClick={() => { setError(false); setLoading(true); }}
-                className="mt-2 text-[8px] text-primary/50 hover:text-primary transition-colors uppercase font-bold"
+                className="mt-2 text-[8px] text-primary/80 hover:text-primary transition-colors uppercase font-bold"
             >
                 Tentar Recarregar
             </button>
           </div>
+
         </div>
       ) : (
         <img

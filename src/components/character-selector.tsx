@@ -3,6 +3,7 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 import { SafeImage } from "./safe-image";
+import { CHARACTERS } from "@/lib/constants";
 
 interface CharacterSelectorProps {
   value: string;
@@ -10,65 +11,28 @@ interface CharacterSelectorProps {
   disabled?: boolean;
 }
 
-import { CHARACTERS } from "@/lib/constants";
-export { CHARACTERS };
-
-const colorClasses: Record<string, { active: string; hover: string; icon: string }> = {
-  orange: { active: "border-orange-500 bg-orange-500/20 text-orange-100", hover: "hover:border-orange-500/50", icon: "text-orange-400" },
-  yellow: { active: "border-yellow-500 bg-yellow-500/20 text-yellow-100", hover: "hover:border-yellow-500/50", icon: "text-yellow-400" },
-  red: { active: "border-red-500 bg-red-500/20 text-red-100", hover: "hover:border-red-500/50", icon: "text-red-400" },
-  pink: { active: "border-pink-500 bg-pink-500/20 text-pink-100", hover: "hover:border-pink-500/50", icon: "text-pink-400" },
-  slate: { active: "border-slate-500 bg-slate-500/20 text-slate-100", hover: "hover:border-slate-500/50", icon: "text-slate-400" },
-  green: { active: "border-green-500 bg-green-500/20 text-green-100", hover: "hover:border-green-500/50", icon: "text-green-400" },
-  rose: { active: "border-rose-500 bg-rose-500/20 text-rose-100", hover: "hover:border-rose-500/50", icon: "text-rose-400" },
-  cyan: { active: "border-cyan-500 bg-cyan-500/20 text-cyan-100", hover: "hover:border-cyan-500/50", icon: "text-cyan-400" },
-  blue: { active: "border-blue-500 bg-blue-500/20 text-blue-100", hover: "hover:border-blue-500/50", icon: "text-blue-400" },
-  purple: { active: "border-purple-500 bg-purple-500/20 text-purple-100", hover: "hover:border-purple-500/50", icon: "text-purple-400" },
-  indigo: { active: "border-indigo-500 bg-indigo-500/20 text-indigo-100", hover: "hover:border-indigo-500/50", icon: "text-indigo-400" },
+const colorThemes: Record<string, string> = {
+  orange: "from-orange-500/20 to-orange-500/5 dark:text-orange-200 text-orange-900 border-orange-500/20 shadow-orange-500/10",
+  yellow: "from-yellow-500/20 to-yellow-500/5 dark:text-yellow-200 text-yellow-900 border-yellow-500/20 shadow-yellow-500/10",
+  red: "from-red-500/20 to-red-500/5 dark:text-red-200 text-red-900 border-red-500/20 shadow-red-500/10",
+  pink: "from-pink-500/20 to-pink-500/5 dark:text-pink-200 text-pink-900 border-pink-500/20 shadow-pink-500/10",
+  slate: "from-slate-500/20 to-slate-500/5 dark:text-slate-200 text-slate-900 border-slate-500/20 shadow-slate-500/10",
+  green: "from-green-500/20 to-green-500/5 dark:text-green-200 text-green-900 border-green-500/20 shadow-green-500/10",
+  rose: "from-rose-500/20 to-rose-500/5 dark:text-rose-200 text-rose-900 border-rose-500/20 shadow-rose-500/10",
+  cyan: "from-cyan-500/20 to-cyan-500/5 dark:text-cyan-200 text-cyan-900 border-cyan-500/20 shadow-cyan-500/10",
+  blue: "from-blue-500/20 to-blue-500/5 dark:text-blue-200 text-blue-900 border-blue-500/20 shadow-blue-500/10",
+  purple: "from-purple-500/20 to-purple-500/5 dark:text-purple-200 text-purple-900 border-purple-500/20 shadow-purple-500/10",
+  indigo: "from-indigo-500/20 to-indigo-500/5 dark:text-indigo-200 text-indigo-900 border-indigo-500/20 shadow-indigo-500/10",
 };
 
+
 export function CharacterSelector({ value, onChange, disabled }: CharacterSelectorProps) {
-  const scrollContainerRef = React.useRef<HTMLDivElement>(null);
-
-  const scroll = (direction: 'left' | 'right') => {
-    if (scrollContainerRef.current) {
-      const scrollAmount = 600;
-      scrollContainerRef.current.scrollBy({
-        left: direction === 'left' ? -scrollAmount : scrollAmount,
-        behavior: 'smooth'
-      });
-    }
-  };
-
   return (
-    <div className="relative group/carousel">
-      {/* Botão Esquerda */}
-      <button
-        onClick={() => scroll('left')}
-        className="absolute left-0 top-1/2 -translate-y-1/2 z-20 bg-black/60 hover:bg-black/90 text-white p-2 rounded-full backdrop-blur-md border border-white/10 opacity-0 group-hover/carousel:opacity-100 transition-opacity disabled:opacity-0"
-        type="button"
-      >
-        ←
-      </button>
-
-      {/* Botão Direita */}
-      <button
-        onClick={() => scroll('right')}
-        className="absolute right-0 top-1/2 -translate-y-1/2 z-20 bg-black/60 hover:bg-black/90 text-white p-2 rounded-full backdrop-blur-md border border-white/10 opacity-0 group-hover/carousel:opacity-100 transition-opacity disabled:opacity-0"
-        type="button"
-      >
-        →
-      </button>
-
-      {/* Container de Scroll */}
-      <div
-        ref={scrollContainerRef}
-        className="flex overflow-x-auto lg:flex-col lg:overflow-y-auto lg:h-[700px] lg:overflow-x-hidden gap-3 pb-4 lg:pb-0 lg:pr-2 snap-x snap-mandatory lg:snap-y scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent px-1"
-      >
+    <div className="w-full">
+      <div className="flex xl:flex-col overflow-x-auto xl:overflow-y-auto xl:max-h-[50vh] gap-2 pb-2 xl:pb-0 xl:pr-2 custom-scrollbar snap-x xl:snap-y scroll-smooth">
         {CHARACTERS.map((char) => {
-          const colors = colorClasses[char.color];
           const isSelected = value === char.id;
-          
+          const theme = colorThemes[char.color] || colorThemes.slate;
           const photoUrl = `/avatars/${char.id}.jpg`;
 
           return (
@@ -77,24 +41,43 @@ export function CharacterSelector({ value, onChange, disabled }: CharacterSelect
               onClick={() => onChange(char.id)}
               disabled={disabled}
               className={cn(
-                "flex-none w-[100px] h-[130px] lg:w-full lg:h-[150px] snap-center flex flex-col items-center justify-center p-2 rounded-2xl border-2 transition-all duration-300 gap-2 relative overflow-hidden group",
+                "flex-none w-16 xl:w-full p-1.5 celestial-card border transition-all duration-500 group relative overflow-hidden snap-center",
                 isSelected
-                  ? `${colors.active} shadow-[0_0_20px_rgba(168,85,247,0.4)] scale-105 z-10 lg:scale-[1.03]`
-                  : `border-white/5 bg-white/5 hover:bg-white/10 text-muted-foreground ${colors.hover}`,
+                  ? `bg-gradient-to-br ${theme} border-accent/30 shadow-2xl scale-105 xl:translate-x-1`
+                  : "bg-surface hover:bg-muted hover:border-accent/10",
                 disabled && "opacity-50 cursor-not-allowed"
               )}
             >
-              <div className={cn("w-14 h-14 lg:w-16 lg:h-16 rounded-full overflow-hidden border-2 transition-transform duration-500 group-hover:scale-115 shrink-0 bg-black/60 shadow-lg", isSelected ? "border-white" : "border-white/20")}>
-                <SafeImage 
-                  src={photoUrl} 
-                  alt={char.label} 
-                  fallbackName={char.label}
-                  className="w-full h-full" 
-                />
-              </div>
-              <div className="text-center w-full">
-                <span className="text-xs md:text-sm font-bold block truncate w-full px-1">{char.label}</span>
-                <span className="text-[9px] md:text-[10px] opacity-70 uppercase tracking-wider truncate block w-full">{char.anime}</span>
+              <div className="flex flex-col xl:flex-row items-center gap-2">
+                <div className={cn(
+                    "w-10 h-10 xl:w-9 xl:h-9 rounded-full overflow-hidden border transition-transform duration-700 group-hover:rotate-6 group-hover:scale-110 flex-shrink-0",
+                    isSelected ? "border-accent shadow-[0_0_15px_var(--accent-glow)]" : "border-border"
+                )}>
+
+
+                  <SafeImage 
+                    src={photoUrl} 
+                    alt={char.label} 
+                    fallbackName={char.label}
+                    className="w-full h-full object-cover" 
+                  />
+                </div>
+                
+                <div className="text-center xl:text-left flex-1 overflow-hidden">
+                    <p className={cn(
+                        "text-[9px] xl:text-[11px] font-black uppercase tracking-tight truncate leading-tight transition-colors",
+                         isSelected ? "text-foreground" : "text-white/90"
+                    )}>
+                        {char.label}
+                    </p>
+                    <p className="hidden xl:block text-[8px] font-bold text-white/50 uppercase tracking-widest mt-0.5 truncate">
+                        {char.anime}
+                    </p>
+
+
+
+
+                </div>
               </div>
             </button>
           );
@@ -103,3 +86,4 @@ export function CharacterSelector({ value, onChange, disabled }: CharacterSelect
     </div>
   );
 }
+

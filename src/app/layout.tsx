@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
-import { Outfit } from "next/font/google";
+import { Inter, Outfit } from "next/font/google";
 import "./globals.css";
 
-const outfit = Outfit({ subsets: ["latin"], weight: ["300", "400", "500", "700", "900"] });
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
+const outfit = Outfit({ subsets: ["latin"], variable: "--font-outfit" });
 
 export const metadata: Metadata = {
   title: "Ai Anime Legends Generator — Crie Arte com IA",
@@ -22,16 +23,35 @@ export const metadata: Metadata = {
   }
 };
 
+import { ThemeProvider } from "@/components/theme-provider";
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-BR" className="dark">
-      <body className={`${outfit.className} min-h-screen bg-background text-foreground selection:bg-primary selection:text-primary-foreground`}>
+    <html lang="pt-BR" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var theme = localStorage.getItem('celestial-theme');
+                  var supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+                  if (!theme && supportDarkMode) theme = 'dark';
+                  if (theme === 'dark') document.documentElement.classList.add('dark-theme');
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
+      </head>
+      <body className={`${inter.variable} ${outfit.variable} font-sans min-h-screen bg-background text-foreground selection:bg-primary selection:text-primary-foreground antialiased`}>
         {children}
       </body>
     </html>
   );
 }
+

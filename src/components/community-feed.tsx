@@ -2,8 +2,7 @@
 
 import * as React from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Download, Eye, Play, Sparkles, AlertCircle, Copy, Share2, Check } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Download, Eye, Play, Sparkles, AlertCircle, Copy, Share2 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { SafeImage } from "./safe-image";
 import { cn } from "@/lib/utils";
@@ -55,7 +54,6 @@ export function CommunityFeed() {
 
     fetchFeed();
     
-    // Subscribe to new items
     const channel = supabase
       .channel('feed-changes')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'community_feed' }, (payload) => {
@@ -70,143 +68,112 @@ export function CommunityFeed() {
 
   if (loading) {
     return (
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6">
         {[...Array(5)].map((_, i) => (
-          <div key={i} className="aspect-[3/4] rounded-2xl bg-white/5 animate-pulse border border-white/10" />
+          <div key={i} className="aspect-[3/4] rounded-[2rem] bg-foreground/5 border border-border animate-pulse" />
         ))}
       </div>
+
     );
   }
 
   return (
-    <div className="w-full space-y-8">
+    <div className="w-full space-y-12">
       {!supabase && (
-        <div className="w-full p-6 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-200 text-sm flex flex-col items-center gap-2 text-center">
-          <p className="font-bold">⚠️ Mural em modo Offline</p>
-          <p className="opacity-80">As variáveis de ambiente do Supabase não foram detectadas no seu painel da Vercel. Configure <b>NEXT_PUBLIC_SUPABASE_URL</b> e <b>NEXT_PUBLIC_SUPABASE_ANON_KEY</b> para ativar a galeria global.</p>
+        <div className="glass-panel p-8 rounded-[2rem] border-border text-center space-y-4">
+          <div className="flex items-center justify-center gap-3 text-secondary">
+             <AlertCircle className="w-5 h-5" />
+             <p className="font-black uppercase tracking-widest text-xs">Modo Offline Detectado</p>
+          </div>
+          <p className="text-[10px] font-bold text-foreground/65 uppercase tracking-widest max-w-sm mx-auto leading-relaxed">
+            Configure as chaves do Supabase na Vercel para ativar a sincronização global de lendas.
+          </p>
         </div>
       )}
 
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
+
+      <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6">
         <AnimatePresence mode="popLayout">
-          {items.map((item) => (
+          {items.map((item, index) => (
             <motion.div
               key={item.id}
               layout
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.8 }}
-              className="group relative aspect-[3/4] rounded-2xl overflow-hidden border border-white/10 bg-white/5 shadow-2xl transition-all hover:border-primary/40"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.05 }}
+              className="group relative aspect-[3/4] rounded-[2.5rem] overflow-hidden glass-panel border-border shadow-2xl transition-all duration-700 hover:scale-[1.02]"
             >
+
               <SafeImage
                 src={item.image_url}
-                alt={`Lenda Anime de ${item.character_name || item.character_id} (${item.anime_name || 'Anime'}) - ${item.prompt}`}
-                className="w-full h-full"
+                alt={item.prompt}
+                className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
               />
               
-              {/* Overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-end p-4">
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] bg-primary/20 text-primary px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
-                      {item.character_name || item.character_id}
-                    </span>
-                    {item.is_video && (
-                      <span className="text-[10px] bg-purple-500/20 text-purple-400 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider flex items-center">
-                        <Play className="w-2 h-2 mr-1 fill-current" /> Vídeo
-                      </span>
-                    )}
+              {/* Overlay Premium */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 flex flex-col justify-end p-6">
+                <div className="space-y-4 translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-black text-primary uppercase tracking-widest dark:brightness-125 brightness-90">
+                        {item.character_name || "HERÓI"}
+                    </p>
+                    <p className="text-[9px] font-bold text-white/85 uppercase tracking-[0.2em] line-clamp-2 italic leading-relaxed">
+                        "{item.prompt}"
+                    </p>
+
                   </div>
-                  <p className="text-white/70 text-xs line-clamp-2 leading-tight font-medium italic">
-                    "{item.prompt}"
-                  </p>
                   
-                  <div className="flex items-center gap-2 pt-1">
-                    <Button 
-                      size="icon" 
-                      variant="ghost" 
-                      className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white"
+                  <div className="flex items-center gap-2">
+                    <button 
+                      className="w-8 h-8 rounded-full glass-panel flex items-center justify-center hover:bg-white text-white hover:text-black transition-all"
                       onClick={() => window.open(item.image_url, '_blank')}
                     >
                       <Eye className="w-3.5 h-3.5" />
-                    </Button>
-                    <Button 
-                      size="icon" 
-                      variant="ghost" 
-                      className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white"
+                    </button>
+                    <button 
+                      className="w-8 h-8 rounded-full glass-panel flex items-center justify-center hover:bg-white text-white hover:text-black transition-all"
                       onClick={(e) => {
                         e.stopPropagation();
                         navigator.clipboard.writeText(item.prompt);
-                        const btn = e.currentTarget;
-                        const original = btn.innerHTML;
-                        btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check text-green-400"><path d="M20 6 9 17l-5-5"/></svg>';
-                        setTimeout(() => { btn.innerHTML = original; }, 2000);
                       }}
-                      title="Copiar Prompt"
                     >
                       <Copy className="w-3.5 h-3.5" />
-                    </Button>
-                    <Button 
-                      size="icon" 
-                      variant="ghost" 
-                      className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (navigator.share) {
-                          navigator.share({
-                            title: `AI Anime Legends - ${item.character_id}`,
-                            text: `Confira esta arte incrível gerada por IA! Prompt: ${item.prompt}`,
-                            url: item.image_url
-                          });
-                        } else {
-                          navigator.clipboard.writeText(item.image_url);
-                          alert("Link copiado!");
-                        }
-                      }}
-                      title="Compartilhar"
-                    >
-                      <Share2 className="w-3.5 h-3.5" />
-                    </Button>
-                    <Button 
-                      size="icon" 
-                      variant="ghost" 
-                      className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white"
+                    </button>
+                    <button 
+                      className="w-8 h-8 rounded-full glass-panel flex items-center justify-center hover:bg-white text-white hover:text-black transition-all"
                       onClick={() => {
                         const link = document.createElement('a');
                         link.href = item.image_url;
                         link.download = `legend-${item.id}.jpg`;
                         link.click();
                       }}
-                      title="Baixar"
                     >
                       <Download className="w-3.5 h-3.5" />
-                    </Button>
+                    </button>
                   </div>
                 </div>
               </div>
 
-              {/* Tag de Vídeo Permanente (Opaca) */}
+              {/* Video Indicator */}
               {item.is_video && (
-                <div className="absolute top-2 right-2 bg-purple-600/80 backdrop-blur-md p-1.5 rounded-lg shadow-lg group-hover:opacity-0 transition-opacity">
+                <div className="absolute top-4 right-4 w-10 h-10 rounded-full glass-panel flex items-center justify-center border-white/30 bg-black/40">
                   <Play className="w-3 h-3 text-white fill-current" />
                 </div>
               )}
+
             </motion.div>
           ))}
         </AnimatePresence>
       </div>
 
       {items.length === 0 && supabase && (
-        <div className="w-full flex flex-col items-center justify-center py-20 border-2 border-dashed border-white/5 rounded-3xl bg-white/[0.02]">
-          <Sparkles className="w-12 h-12 text-white/5 mb-4" />
-          <div className="text-center space-y-2">
-            <p className="text-white/20 font-bold uppercase tracking-[0.3em] text-sm">
-              O Mural está vazio.
-            </p>
-            <p className="text-white/10 text-[10px] uppercase tracking-widest">Seja o primeiro a criar uma lenda e compartilhá-la com o mundo!</p>
-          </div>
+        <div className="w-full py-32 glass-panel rounded-[3rem] border-border flex flex-col items-center justify-center text-center">
+          <Sparkles className="w-12 h-12 text-foreground/10 mb-6" />
+          <p className="text-[11px] font-black text-foreground/45 uppercase tracking-[0.5em]">O Vazio das Lendas</p>
+          <p className="text-[10px] font-bold text-foreground/35 uppercase tracking-widest mt-4">Nenhuma criação manifestada ainda</p>
         </div>
       )}
+
     </div>
   );
 }

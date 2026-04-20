@@ -1,38 +1,46 @@
 @import "tailwindcss";
 
+:root {
+  /* arquiteto-principal: Sistema de Design Ergonômico (Antigravity v4.0) */
+  --base-weight: 400;
+  
+  /* APCA Light Palette */
+  --bg-app: #fcfcfc;
+  --bg-surface: #ffffff;
+  --text-primary: #121212;
+  --text-secondary: #4a4a4a;
+  --accent: #10b981;
+  --accent-glow: rgba(16, 185, 129, 0.2);
+  
+  --border: rgba(0, 0, 0, 0.08);
+  --shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+}
+
+.dark-theme {
+  /* APCA Dark Palette (Mitigação de Halation: #121212 foundation) */
+  --bg-app: #121212;
+  --bg-surface: #1e1e1e;
+  
+  /* APCA Contraste Alvo: Lc 75 para primários, Lc 60 para secundários */
+  --text-primary: #e0e0e0;
+  --text-secondary: #b0b0b0;
+  
+  --accent: #10b981;
+  --accent-glow: rgba(16, 185, 129, 0.4);
+  
+  --border: rgba(255, 255, 255, 0.1); /* Bio-Visual: Borda semitransparente alpha */
+}
+
 @theme {
-  --color-background: hsl(240 10% 3.9%);
-  --color-foreground: hsl(0 0% 98%);
-
-  --color-card: hsl(240 10% 3.9%);
-  --color-card-foreground: hsl(0 0% 98%);
-
-  --color-popover: hsl(240 10% 3.9%);
-  --color-popover-foreground: hsl(0 0% 98%);
-
-  --color-primary: hsl(175 80% 40%);
-  /* Cyberpunk Cyan/Teal */
-  --color-primary-foreground: hsl(175 10% 95%);
-
-  --color-secondary: hsl(240 3.7% 15.9%);
-  --color-secondary-foreground: hsl(0 0% 98%);
-
-  --color-muted: hsl(240 3.7% 15.9%);
-  --color-muted-foreground: hsl(240 5% 64.9%);
-
-  --color-accent: hsl(240 3.7% 15.9%);
-  --color-accent-foreground: hsl(0 0% 98%);
-
-  --color-destructive: hsl(0 62.8% 30.6%);
-  --color-destructive-foreground: hsl(0 0% 98%);
-
-  --color-border: hsl(240 3.7% 15.9%);
-  --color-input: hsl(240 3.7% 15.9%);
-  --color-ring: hsl(240 4.9% 83.9%);
-
-  --radius-lg: 0.75rem;
-  --radius-md: 0.6rem;
-  --radius-sm: 0.4rem;
+  --color-background: var(--bg-app);
+  --color-foreground: var(--text-primary);
+  --color-primary: var(--accent);
+  --color-card: var(--bg-surface);
+  --color-border: var(--border);
+  
+  --radius-lg: 2rem;
+  --radius-md: 1.5rem;
+  --radius-sm: 1rem;
 }
 
 @layer base {
@@ -41,15 +49,77 @@
   }
 
   body {
-    @apply bg-background text-foreground antialiased;
-    font-feature-settings: "rlig" 1, "calt" 1;
+    background-color: var(--bg-app);
+    color: var(--text-primary);
+    font-family: var(--font-inter), system-ui, sans-serif;
+    /* Mitigação de Halation: Peso reduzido 15% e letter-spacing compensatório no modo dark */
+    font-variation-settings: "wght" var(--base-weight);
+    transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
+                color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .dark-theme body {
+    /* Engenharia Biofísica: Redução de peso para anular irradiação luminosa */
+    --base-weight: 340; 
+    letter-spacing: 0.02ch; /* Compensação de contração visual */
+    
+    /* Melhoria de Rendering para WebKit/macOS */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-outfit), sans-serif;
+    @apply font-black tracking-tighter uppercase;
+    font-variation-settings: "wght" 900;
   }
 }
 
-.glass-panel {
-  @apply bg-white/5 backdrop-blur-md border border-white/10 shadow-xl;
-}
+@layer components {
+  /* Arquitetura de Elevação Técnica */
+  .celestial-card {
+    @apply rounded-3xl transition-all duration-300;
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border);
+    /* Biologia da Visão: Impedir vazamento do background sob bordas alpha */
+    background-clip: padding-box; 
+  }
 
-.text-gradient {
-  @apply bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-blue-500 to-emerald-400;
+  .dark-theme .celestial-card {
+    /* Elevação no Escuro: Proibido sombras cinzas. Usa Glow Interno Afiado */
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05); 
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  }
+
+  /* Hierarquia de Texto APCA */
+  .text-primary { color: var(--text-primary); }
+  .text-secondary { color: var(--text-secondary); }
+
+  /* Comportamento de Mídia */
+  img {
+    transition: filter 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .dark-theme img {
+    /* Evitar clarão ofuscante (Pupillary Flash Prevention) */
+    filter: brightness(0.85) grayscale(10%);
+  }
+
+  .dark-theme img:hover {
+    filter: brightness(1) grayscale(0%);
+  }
+
+  /* Ícones Lucide/SVG herdar cor nativa */
+  svg {
+    fill: currentColor;
+    stroke: currentColor;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-primary/20 rounded-full hover:bg-primary/40 transition-colors;
+  }
 }

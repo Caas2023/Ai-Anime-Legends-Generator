@@ -2,13 +2,10 @@
 
 import * as React from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import Image from "next/image";
-import { Trash2, Download, Image as ImageIcon, X, Copy } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { Trash2, Download, Copy, Sparkles } from "lucide-react";
 import { GalleryItem } from "@/hooks/use-gallery";
 import { cn } from "@/lib/utils";
-import { CHARACTERS, ART_STYLES } from "@/lib/constants";
+import { CHARACTERS } from "@/lib/constants";
 
 interface GalleryProps {
     images: GalleryItem[];
@@ -21,103 +18,82 @@ export function Gallery({ images, onRemove, onSelect }: GalleryProps) {
 
     return (
         <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="w-full space-y-4 mt-12 border-t border-white/10 pt-8"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="w-full"
         >
-            <div className="flex items-center justify-between px-2">
-                <h3 className="text-xl font-bold flex items-center gap-2">
-                    <ImageIcon className="w-5 h-5 text-primary" />
-                    Sua Coleção
-                    <span className="text-xs bg-white/10 px-2 py-0.5 rounded-full text-white/60 font-mono">
-                        {images.length}
-                    </span>
-                </h3>
+            <div className="flex overflow-x-auto gap-6 pb-8 custom-scrollbar snap-x px-4">
+                <AnimatePresence mode="popLayout">
+                    {images.map((img, index) => (
+                        <motion.div
+                            key={img.id}
+                            initial={{ opacity: 0, x: 20, scale: 0.9 }}
+                            animate={{ opacity: 1, x: 0, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.5, transition: { duration: 0.2 } }}
+                            transition={{ delay: index * 0.05 }}
+                            layout
+                            className="relative group flex-none w-[180px] aspect-[3/4] rounded-[2rem] overflow-hidden glass-panel border-white/5 cursor-pointer snap-center shadow-2xl"
+                            onClick={() => onSelect && onSelect(img.url)}
+                        >
+                            {/* Base Image */}
+                            <img
+                                src={img.url}
+                                alt="Memory Fragment"
+                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                            />
+
+                            {/* Aura Overlay */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity p-4 flex flex-col justify-end gap-3 translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+                                <div className="flex items-center justify-center gap-2">
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            const link = document.createElement("a");
+                                            link.href = img.url;
+                                            link.download = `anime-legends-${img.id}.jpg`;
+                                            link.click();
+                                        }}
+                                        className="w-10 h-10 rounded-full glass-panel flex items-center justify-center hover:bg-white text-white hover:text-black transition-all"
+                                    >
+                                        <Download className="w-4 h-4" />
+                                    </button>
+                                    
+                                    {img.prompt && (
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                navigator.clipboard.writeText(img.prompt);
+                                            }}
+                                            className="w-10 h-10 rounded-full glass-panel flex items-center justify-center hover:bg-secondary text-white hover:text-black transition-all"
+                                        >
+                                            <Copy className="w-4 h-4" />
+                                        </button>
+                                    )}
+
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            onRemove(img.id);
+                                        }}
+                                        className="w-10 h-10 rounded-full glass-panel flex items-center justify-center hover:bg-red-500 text-white transition-all"
+                                    >
+                                        <Trash2 className="w-4 h-4" />
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Character Magic Label */}
+                            <div className="absolute top-3 left-3 flex items-center gap-2 bg-black/40 backdrop-blur-xl px-3 py-1.5 rounded-full border border-white/10 pointer-events-none">
+                                <Sparkles className="w-2.5 h-2.5 text-primary" />
+                                <span className="text-[8px] font-black text-white uppercase tracking-widest">
+                                    {CHARACTERS.find(c => c.id === img.character)?.label || "Lenda"}
+                                </span>
+                            </div>
+                        </motion.div>
+                    ))}
+                </AnimatePresence>
             </div>
-
-            <ScrollArea className="w-full whitespace-nowrap rounded-2xl border border-white/5 bg-black/20 p-4">
-                <div className="flex w-max space-x-4">
-                    <AnimatePresence mode="popLayout">
-                        {images.map((img) => (
-                            <motion.div
-                                key={img.id}
-                                initial={{ opacity: 0, scale: 0.8 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                exit={{ opacity: 0, scale: 0.8, width: 0 }}
-                                layout
-                                className="relative group w-[150px] aspect-[3/4] rounded-xl overflow-hidden bg-black/50 border border-white/10 shrink-0 cursor-pointer"
-                                onClick={() => onSelect && onSelect(img.url)}
-                            >
-                                <img
-                                    src={img.url}
-                                    alt="Gallery Item"
-                                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
-                                />
-
-                                {/* Overlay */}
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity p-2 flex flex-col justify-end">
-                                    <div className="flex flex-wrap items-center justify-center gap-2">
-                                        <Button
-                                            size="icon"
-                                            variant="destructive"
-                                            className="h-8 w-8 rounded-lg shadow-lg"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                onRemove(img.id);
-                                            }}
-                                        >
-                                            <Trash2 className="w-4 h-4" />
-                                        </Button>
-
-                                        {img.prompt && (
-                                            <Button
-                                                size="icon"
-                                                variant="ghost"
-                                                className="h-8 w-8 rounded-lg shadow-lg bg-white/10 hover:bg-white/20 text-white"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    navigator.clipboard.writeText(img.prompt);
-                                                    // Simple feedback
-                                                    const btn = e.currentTarget;
-                                                    const originalInner = btn.innerHTML;
-                                                    btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check text-green-400"><path d="M20 6 9 17l-5-5"/></svg>';
-                                                    setTimeout(() => { btn.innerHTML = originalInner; }, 2000);
-                                                }}
-                                                title="Copiar Prompt"
-                                            >
-                                                <Copy className="w-4 h-4" />
-                                            </Button>
-                                        )}
-
-                                        <Button
-                                            size="icon"
-                                            variant="secondary"
-                                            className="h-8 w-8 rounded-lg shadow-lg"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                const link = document.createElement("a");
-                                                link.href = img.url;
-                                                link.download = `anime-legends-${img.id}.jpg`;
-                                                link.click();
-                                            }}
-                                        >
-                                            <Download className="w-4 h-4" />
-                                        </Button>
-                                    </div>
-                                </div>
-
-                                {/* Badge */}
-                                <div className="absolute top-2 left-2 bg-black/60 backdrop-blur-md px-2 py-1 rounded-md border border-white/10 pointer-events-none">
-                                    <span className="text-[10px] font-bold text-white uppercase block">
-                                        {CHARACTERS.find(c => c.id === img.character)?.label || "?"}
-                                    </span>
-                                </div>
-                            </motion.div>
-                        ))}
-                    </AnimatePresence>
-                </div>
-                <ScrollBar orientation="horizontal" className="bg-white/5" />
-            </ScrollArea>
         </motion.div>
     );
 }
+

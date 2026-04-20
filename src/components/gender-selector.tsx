@@ -21,47 +21,23 @@ const CHARACTER_TYPES = [
   { id: "villain", label: "Vilão", icon: Skull, color: "red" },
 ];
 
-const colorClasses: Record<string, { active: string; hover: string }> = {
-  blue: {
-    active: "border-blue-500 bg-blue-500/20 text-blue-100 shadow-[0_0_15px_rgba(59,130,246,0.5)]",
-    hover: "hover:border-blue-500/50",
-  },
-  pink: {
-    active: "border-pink-500 bg-pink-500/20 text-pink-100 shadow-[0_0_15px_rgba(236,72,153,0.5)]",
-    hover: "hover:border-pink-500/50",
-  },
-  cyan: {
-    active: "border-cyan-500 bg-cyan-500/20 text-cyan-100 shadow-[0_0_15px_rgba(6,182,212,0.5)]",
-    hover: "hover:border-cyan-500/50",
-  },
-  purple: {
-    active: "border-purple-500 bg-purple-500/20 text-purple-100 shadow-[0_0_15px_rgba(168,85,247,0.5)]",
-    hover: "hover:border-purple-500/50",
-  },
-  orange: {
-    active: "border-orange-500 bg-orange-500/20 text-orange-100 shadow-[0_0_15px_rgba(249,115,22,0.5)]",
-    hover: "hover:border-orange-500/50",
-  },
-  yellow: {
-    active: "border-yellow-500 bg-yellow-500/20 text-yellow-100 shadow-[0_0_15px_rgba(234,179,8,0.5)]",
-    hover: "hover:border-yellow-500/50",
-  },
-  rose: {
-    active: "border-rose-400 bg-rose-500/20 text-rose-100 shadow-[0_0_15px_rgba(251,113,133,0.5)]",
-    hover: "hover:border-rose-400/50",
-  },
-  red: {
-    active: "border-red-500 bg-red-500/20 text-red-100 shadow-[0_0_15px_rgba(239,68,68,0.5)]",
-    hover: "hover:border-red-500/50",
-  },
+const colorThemes: Record<string, string> = {
+  blue: "from-blue-500/20 to-blue-500/5 text-blue-200 border-blue-500/20",
+  pink: "from-pink-500/20 to-pink-500/5 text-pink-200 border-pink-500/20",
+  cyan: "from-cyan-500/20 to-cyan-500/5 text-cyan-200 border-cyan-500/20",
+  purple: "from-purple-500/20 to-purple-500/5 text-purple-200 border-purple-500/20",
+  orange: "from-orange-500/20 to-orange-500/5 text-orange-200 border-orange-500/20",
+  yellow: "from-yellow-500/20 to-yellow-500/5 text-yellow-200 border-yellow-500/20",
+  rose: "from-rose-500/20 to-rose-500/5 text-rose-200 border-rose-500/20",
+  red: "from-red-500/20 to-red-500/5 text-red-200 border-red-500/20",
 };
 
 export function GenderSelector({ value, onChange, disabled }: CharacterSelectorProps) {
   return (
-    <div className="grid grid-cols-4 gap-3">
+    <div className="grid grid-cols-4 gap-2">
       {CHARACTER_TYPES.map((char) => {
         const Icon = char.icon;
-        const colors = colorClasses[char.color];
+        const theme = colorThemes[char.color];
         const isSelected = value === char.id;
 
         return (
@@ -70,14 +46,19 @@ export function GenderSelector({ value, onChange, disabled }: CharacterSelectorP
             onClick={() => onChange(char.id)}
             disabled={disabled}
             className={cn(
-              "flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-all duration-300 gap-1.5",
+              "flex flex-col items-center justify-center p-3 rounded-2xl border transition-all duration-500 gap-1.5 relative overflow-hidden",
               isSelected
-                ? colors.active
-                : `border-white/10 bg-card/50 hover:bg-card/80 text-muted-foreground ${colors.hover}`
+                ? `bg-gradient-to-br ${theme} border-white/20 shadow-xl scale-105`
+                : "bg-white/[0.02] border-white/5 text-white/20 hover:bg-white/5 hover:border-white/10 hover:text-white/40",
+              disabled && "opacity-50 cursor-not-allowed"
             )}
           >
-            <Icon className="w-6 h-6" />
-            <span className="text-xs font-semibold">{char.label}</span>
+            <Icon className={cn("w-4 h-4 transition-transform duration-500", isSelected ? "scale-110" : "group-hover:scale-110")} />
+            <span className="text-[8px] font-black uppercase tracking-tighter">{char.label}</span>
+            
+            {isSelected && (
+                <div className="absolute inset-x-0 bottom-0 h-0.5 bg-primary/50" />
+            )}
           </button>
         );
       })}
@@ -85,5 +66,5 @@ export function GenderSelector({ value, onChange, disabled }: CharacterSelectorP
   );
 }
 
-// Export character types for use in generate function
 export { CHARACTER_TYPES };
+

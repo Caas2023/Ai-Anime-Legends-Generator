@@ -3,7 +3,20 @@
 import * as React from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { Wand2, Download, RefreshCw, Sparkles, AlertCircle, Instagram, Facebook, MessageCircle, Share2, Github, Copy, Check, Video, Play, Settings, ChevronDown } from "lucide-react";
+import { 
+    Wand2, 
+    Download, 
+    RefreshCw, 
+    Sparkles, 
+    AlertCircle, 
+    Share2, 
+    Copy, 
+    Video, 
+    Settings, 
+    X 
+} from "lucide-react";
+import { ThemeToggle } from "@/components/theme-toggle";
+
 
 import { CharacterSelector } from "@/components/character-selector";
 import { ModelSelector } from "@/components/model-selector";
@@ -48,6 +61,8 @@ export default function Home() {
   const [videoModel, setVideoModel] = React.useState("ltx");
   const { play } = useSound();
   const { images, addImage, removeImage } = useGallery();
+  const [activeTab, setActiveTab] = React.useState<"workstation" | "gallery" | "mural">("workstation");
+
 
   React.useEffect(() => {
     // Check url fragment for api_key
@@ -238,470 +253,456 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen bg-[#050505] text-white selection:bg-primary/30 relative overflow-hidden font-sans pb-16">
+    <main className="h-screen bg-background text-foreground selection:bg-primary/30 relative overflow-hidden font-sans">
+
       
-      {/* Background Animado Dinâmico (Orbes UI) */}
+      {/* Notificação de Erro (Alerta Místico) */}
+      <AnimatePresence>
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, y: -50, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            className="fixed top-10 left-1/2 -translate-x-1/2 z-[100] w-full max-w-md px-6 text-center"
+          >
+            <div className="glass-panel border-red-500/20 shadow-[0_0_50px_rgba(239,68,68,0.2)] p-6 rounded-3xl flex items-center gap-6 text-left">
+              <div className="w-12 h-12 bg-red-500/20 rounded-2xl flex items-center justify-center text-red-500 animate-pulse flex-shrink-0">
+                <AlertCircle className="w-6 h-6" />
+              </div>
+              <div className="flex-1">
+                <p className="text-[10px] font-black uppercase tracking-widest text-red-400">Desequilíbrio Neural</p>
+                <p className="text-sm text-white/70 font-medium leading-relaxed mt-1">{error}</p>
+              </div>
+              <button onClick={() => setError(null)} className="text-white/20 hover:text-white transition-colors">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      
+      {/* Background Animado "Neural Nebula" */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
-        {/* Mesh Background */}
-        <div className="absolute inset-0 opacity-[0.02] mix-blend-overlay" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.65%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E")' }} />
-        
-        {/* Orbes Animados com Framer/Tailwind */}
-        <div className="absolute -top-[10%] -left-[10%] w-[45%] h-[45%] rounded-full bg-purple-600/20 blur-[150px] animate-pulse mix-blend-screen" style={{ animationDuration: '7s' }} />
-        <div className="absolute top-[20%] -right-[10%] w-[50%] h-[50%] rounded-full bg-cyan-600/15 blur-[160px] animate-pulse mix-blend-screen" style={{ animationDuration: '10s', animationDelay: '2s' }} />
-        <div className="absolute bottom-[-10%] left-[20%] w-[60%] h-[40%] rounded-full bg-emerald-600/10 blur-[140px] animate-pulse mix-blend-screen" style={{ animationDuration: '8s', animationDelay: '1s' }} />
+        <div className="absolute inset-0 bg-mesh opacity-40 mix-blend-screen dark:mix-blend-screen mix-blend-multiply" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,transparent_0%,var(--background)_100%)]" />
+
       </div>
 
-      <div className="container max-w-6xl mx-auto px-4 py-8 relative z-10">
+      <div className="container max-w-[1700px] mx-auto px-4 py-4 relative z-10">
 
-        {/* Global Nav / BYOP */}
-        <div className="absolute top-4 right-4 z-50 flex items-center">
-          {apiKey ? (
-            <div className="flex items-center gap-3 bg-black/40 backdrop-blur-xl border border-white/10 p-1.5 pl-4 rounded-full shadow-2xl">
-              <span className="text-xs font-bold text-emerald-400 flex items-center">
-                <Check className="w-3 h-3 mr-1" />
-                <span className="hidden md:inline">Pollen Ativo</span>
-              </span>
-              <Button size="sm" variant="ghost" onClick={handleLogout} className="h-8 rounded-full text-xs hover:bg-white/10 text-white/70">Sair</Button>
-            </div>
-          ) : (
-            <Button size="sm" variant="outline" onClick={handleLogin} className="h-10 rounded-full border-primary/50 bg-primary/10 text-primary hover:bg-primary/20 backdrop-blur-md shadow-lg shadow-primary/20 gap-2">
-              <Sparkles className="w-4 h-4" />
-              <span className="hidden md:inline font-bold">Zere os Custos (BYOP)</span>
-              <span className="md:hidden font-bold">BYOP</span>
-            </Button>
-          )}
-        </div>
-
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center space-y-3 md:space-y-4 mb-8 md:mb-12 pt-4 md:pt-8"
-        >
-          <div className="inline-flex items-center justify-center p-2 px-4 bg-white/5 rounded-full backdrop-blur-md border border-white/10 mb-2 md:mb-4 shadow-lg hover:bg-white/10 transition-colors">
-            <Image src="/logo.png" alt="Logo" width={24} height={24} className="rounded-full mr-2 shadow-cyan-500/50 shadow-sm" />
-            <span className="text-xs font-bold tracking-widest uppercase text-white/90">Anime Legends</span>
-          </div>
-          <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 drop-shadow-[0_0_15px_rgba(168,85,247,0.5)]">
-            Ai Anime Legends Generator
-          </h1>
-          <p className="text-base md:text-lg text-muted-foreground/80 max-w-2xl mx-auto font-medium px-4">
-            Escolha seu personagem, defina o estilo e deixe a IA criar uma obra-prima.
-          </p>
-        </motion.div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start w-full">
-          
-          {/* Lendas Sidebar (Esquerda) */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="lg:col-span-2 flex flex-col lg:sticky lg:top-8"
-          >
-            <div className="flex items-center space-x-3 mb-6">
-              <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-primary to-cyan-600 text-white text-sm font-bold shadow-lg shadow-primary/25">1</div>
-              <h2 className="text-xl font-bold tracking-tight">O Herói</h2>
-            </div>
-            {/* O Componente agora é vertical no PC */}
-            <CharacterSelector
-              value={selectedCharacter}
-              onChange={(val) => { setSelectedCharacter(val); play("click"); }}
-              disabled={isGenerating || isGeneratingVideo}
-            />
-          </motion.div>
-
-          {/* Controls Section (Meio) */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="lg:col-span-5 space-y-6 md:space-y-10"
-          >
-            {/* Model/Style Selection */}
-            <div className="space-y-4">
-              <div className="flex items-center space-x-3">
-                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-cyan-600 text-white text-sm font-bold shadow-lg shadow-blue-500/25">2</div>
-                <h2 className="text-xl font-bold tracking-tight">Estilo Artístico</h2>
-              </div>
-              <ModelSelector
-                value={selectedStyle}
-                onChange={(val) => { setSelectedStyle(val); play("click"); }}
-                disabled={isGenerating}
-              />
-            </div>
-
-            {/* Size Selection */}
-            <div className="space-y-4">
-              <div className="flex items-center space-x-3">
-                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 text-white text-sm font-bold shadow-lg shadow-purple-500/25">3</div>
-                <h2 className="text-xl font-bold tracking-tight">Tamanho da Imagem</h2>
-              </div>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-                {IMAGE_SIZES.map((size) => (
-                  <Button
-                    key={size.id}
-                    variant={selectedSize.id === size.id ? "default" : "outline"}
-                    className={cn(
-                      "flex flex-col items-center justify-center p-4 h-auto rounded-xl border-white/10 transition-all gap-2",
-                      selectedSize.id === size.id ? "bg-white text-black scale-105" : "bg-white/5 text-white/60 hover:bg-white/10"
-                    )}
-                    onClick={() => { setSelectedSize(size); play("click"); }}
-                    disabled={isGenerating}
-                  >
-                    <span className="text-2xl">{size.icon}</span>
-                    <span className="text-[10px] uppercase tracking-tighter font-bold">{size.label}</span>
-                  </Button>
-                ))}
-              </div>
-            </div>
-
-            {/* Custom Prompt Context */}
-            <div className="space-y-4">
-              <div className="flex items-center space-x-3">
-                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500 to-cyan-600 text-white text-sm font-bold shadow-lg shadow-emerald-500/25">3</div>
-                <h2 className="text-xl font-bold tracking-tight">Detalhes Extras</h2>
-              </div>
-              <div className="relative group">
-                <Input
-                  placeholder="Ex: segurando uma espada de fogo, no topo de uma montanha..."
-                  value={customPrompt}
-                  onChange={(e) => setCustomPrompt(e.target.value)}
-                  disabled={isGenerating || isEnhancing}
-                  className="bg-white/5 border-white/10 h-14 rounded-xl placeholder:text-white/20 focus:border-primary/50 focus:ring-primary/20 transition-all text-white pr-32"
-                />
-                <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2">
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="h-10 px-3 bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 rounded-lg text-xs font-bold transition-all"
-                    onClick={handleEnhance}
-                    disabled={isGenerating || isEnhancing || !customPrompt.trim()}
-                  >
-                    {isEnhancing ? (
-                      <RefreshCw className="w-3 h-3 animate-spin" />
-                    ) : (
-                      <>
-                        <Sparkles className="w-3 h-3 mr-1.5" />
-                        MELHORAR
-                      </>
-                    )}
-                  </Button>
-                </div>
-              </div>
-              <p className="text-[10px] uppercase tracking-widest text-white/20 font-bold ml-1">
-                Adicione elementos personalizados à sua criação
-              </p>
-            </div>
-
-            {/* Error Message */}
-            <AnimatePresence>
-              {error && (
+        {/* Controle Superior (Configurações e Auth) */}
+        {/* Painel de Configurações Lateral (Gerenciado pelo Header) */}
+        <AnimatePresence>
+            {showSettings && (
                 <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="flex items-center text-red-200 text-sm bg-red-500/10 border border-red-500/20 p-4 rounded-xl"
+                    initial={{ opacity: 0, x: 20, scale: 0.95 }}
+                    animate={{ opacity: 1, x: 0, scale: 1 }}
+                    exit={{ opacity: 0, x: 20, scale: 0.95 }}
+                    className="fixed top-24 right-8 z-[100] glass-panel p-6 rounded-[2rem] border-primary/20 shadow-2xl w-72"
                 >
-                  <AlertCircle className="w-5 h-5 mr-3 flex-shrink-0" />
-                  {error}
+                    <div className="space-y-6">
+                        <div>
+                            <h4 className="text-[10px] font-black uppercase tracking-widest text-primary mb-4">Núcleo de Imagem</h4>
+                            <div className="grid grid-cols-2 gap-2">
+                                {['flux', 'flux-realism', 'openai', 'any-dark'].map(m => (
+                                    <button
+                                        key={m}
+                                        onClick={() => setImageModel(m)}
+                                        className={cn(
+                                            "px-3 py-2 rounded-xl border text-[9px] font-black uppercase tracking-tighter transition-all",
+                                            imageModel === m ? "bg-primary border-transparent text-primary-foreground" : "bg-foreground/5 border-border text-foreground/40 hover:text-foreground"
+                                        )}
+                                    >
+                                        {m}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                        <div>
+                            <h4 className="text-[10px] font-black uppercase tracking-widest text-primary mb-4">Fluxo de Vídeo</h4>
+                            <div className="grid grid-cols-2 gap-2">
+                                {['ltx', 'raycast', 'pika'].map(m => (
+                                    <button
+                                        key={m}
+                                        onClick={() => setVideoModel(m)}
+                                        className={cn(
+                                            "px-3 py-2 rounded-xl border text-[9px] font-black uppercase tracking-tighter transition-all",
+                                            videoModel === m ? "bg-secondary border-transparent text-secondary-foreground" : "bg-foreground/5 border-border text-foreground/40 hover:text-foreground"
+                                        )}
+                                    >
+                                        {m}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
                 </motion.div>
-              )}
-            </AnimatePresence>
+            )}
+        </AnimatePresence>
 
-            {/* Generate Buttons */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Button
-                size="lg"
-                className="w-full text-base md:text-sm lg:text-base h-16 rounded-2xl bg-white text-black hover:bg-white/90 transition-all shadow-[0_0_40px_-10px_rgba(255,255,255,0.3)] hover:shadow-[0_0_60px_-15px_rgba(255,255,255,0.5)] active:scale-[0.98] font-bold tracking-wide relative overflow-hidden group"
-                onClick={() => { handleGenerate(); play("click"); }}
-                onMouseEnter={() => play("hover")}
-                disabled={isGenerating || isGeneratingVideo}
-              >
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/50 to-transparent translate-x-[-100%] group-hover:animate-shimmer" />
-                {isGenerating ? (
-                  <div className="flex items-center">
-                    <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                    CRIANDO...
-                  </div>
-                ) : (
-                  <div className="flex items-center">
-                    <Wand2 className="w-4 h-4 mr-2" />
-                    GERAR FOTO
-                  </div>
-                )}
-              </Button>
 
-              <Button
-                size="lg"
-                className={cn(
-                  "w-full text-base md:text-sm lg:text-base h-16 rounded-2xl transition-all active:scale-[0.98] font-bold tracking-wide relative overflow-hidden group border",
-                  apiKey 
-                    ? "bg-gradient-to-r from-purple-500 to-indigo-600 text-white hover:opacity-90 border-transparent shadow-[0_0_30px_-10px_rgba(168,85,247,0.5)]" 
-                    : "bg-white/5 text-white/30 border-white/10 cursor-not-allowed"
-                )}
-                onClick={() => { if(apiKey) { handleGenerateVideo(); } }}
-                onMouseEnter={() => { if(apiKey) play("hover"); }}
-                disabled={isGenerating || isGeneratingVideo || !apiKey}
-                title={!apiKey ? "Requer conexão Pollen (BYOP) no topo da página" : "Gerar animação de vídeo exclusiva"}
-              >
-                {!apiKey && <div className="absolute inset-0 bg-black/60 z-10 flex flex-col items-center justify-center text-[10px] uppercase tracking-widest text-white/60"><span className="text-white/40 mb-1">Bloqueado</span><span>Conecte Pollen</span></div>}
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:animate-shimmer" />
-                {isGeneratingVideo ? (
-                  <div className="flex items-center relative z-0">
-                    <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                    ANIMANDO...
-                  </div>
-                ) : (
-                  <div className="flex items-center relative z-0">
-                    <Video className="w-4 h-4 mr-2" />
-                    GERAR VÍDEO
-                  </div>
-                )}
-              </Button>
+        <header className="flex items-center justify-between py-4 mb-8">
+            <div className="flex items-center gap-4">
+                <h1 className="text-3xl font-black tracking-tighter uppercase bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                    Ai Anime Legends
+                </h1>
+                <div className="h-6 w-px bg-border/50 hidden md:block" />
+                <p className="hidden md:block text-[10px] font-black text-muted-foreground uppercase tracking-[0.4em]">Celestial workstation v3.5</p>
             </div>
-          </motion.div>
 
-          {/* Result Section (Direita) */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.4 }}
-            className="lg:col-span-5 flex flex-col items-center lg:sticky lg:top-8"
-          >
-            <Card className="w-full aspect-[3/4] md:aspect-[4/5] bg-black/40 border-white/10 backdrop-blur-xl relative overflow-hidden rounded-3xl shadow-2xl group ring-1 ring-white/5">
+            <div className="flex items-center gap-3">
+                {apiKey ? (
+                    <div className="flex items-center gap-3 glass-panel pl-2 pr-5 py-1.5 rounded-full border-primary/20">
+                        <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary">
+                            <Check className="w-4 h-4" />
+                        </div>
+                        <div className="flex flex-col">
+                            <span className="text-[7px] font-black uppercase tracking-widest text-primary/70 leading-none">Fluxo Ativo</span>
+                            <button onClick={handleLogout} className="text-[8px] font-black uppercase text-muted-foreground hover:text-destructive transition-colors text-left leading-none mt-0.5">Desconectar</button>
+                        </div>
+                    </div>
+                ) : (
+                    <Button
+                        variant="ghost"
+                        onClick={handleLogin}
+                        className="glass-panel px-6 h-11 rounded-full font-black uppercase text-[9px] tracking-[0.2em] hover:border-primary/50 transition-all group"
+                    >
+                        <Wand2 className="w-3.5 h-3.5 mr-2 group-hover:animate-pulse" />
+                        Sincronizar
+                    </Button>
+                )}
 
-              {/* Scanline Effect */}
-              <div className="absolute inset-0 bg-[linear-gradient(to_bottom,transparent_50%,rgba(0,0,0,0.3)_50%)] bg-[length:100%_4px] pointer-events-none opacity-20" />
-
-              {generatedImage || generatedVideo ? (
-                <div className="relative w-full h-full p-3 group">
-                  <motion.div
-                    initial={{ opacity: 0, scale: 1.1 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.5 }}
-                    className="relative w-full h-full"
-                  >
-                    {generatedVideo ? (
-                      <video
-                        src={generatedVideo}
-                        controls
-                        autoPlay
-                        loop
-                        playsInline
-                        className="object-cover w-full h-full rounded-2xl shadow-inner bg-black"
-                      />
-                    ) : (
-                      <img
-                        src={generatedImage!}
-                        alt="Arte Gerada"
-                        className="w-full h-full object-cover rounded-2xl shadow-inner"
-                      />
+                <div className="h-4 w-px bg-border/50 mx-1" />
+                <ThemeToggle />
+                
+                <Button
+                    size="icon"
+                    variant="ghost"
+                    className={cn(
+                        "w-11 h-11 rounded-full glass-panel hover:text-primary transition-all",
+                        showSettings && "bg-primary/10 border-primary/30 text-primary"
                     )}
-                  </motion.div>
+                    onClick={() => setShowSettings(!showSettings)}
+                >
+                    <Settings className={cn("w-5 h-5 transition-transform duration-500", showSettings && "rotate-90")} />
+                </Button>
+            </div>
+        </header>
 
-                  {/* Overlay Actions */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-end p-6 md:p-10">
-                    <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-                      <div className="text-left">
-                        <p className="text-white font-black text-2xl uppercase tracking-tighter">
-                          {CHARACTERS.find(c => c.id === selectedCharacter)?.label}
-                        </p>
-                        <p className="text-cyan-400/80 text-sm font-bold uppercase tracking-widest flex items-center">
-                          <Sparkles className="w-3 h-3 mr-1" />
-                          {ART_STYLES.find(s => s.id === selectedStyle)?.label}
-                        </p>
-                      </div>
 
-                      <div className="flex flex-wrap items-center gap-3">
-                        {/* Download Button */}
-                        <Button
-                          onClick={handleDownload}
-                          variant="gradient"
-                          className="shadow-xl font-bold h-12 px-6"
+
+        {/* Workstation Viewport-Locked Area */}
+
+        <div className="h-[calc(100vh-6rem)] relative pb-40 lg:pb-32">
+
+
+          <AnimatePresence mode="wait">
+            {activeTab === "workstation" && (
+              <motion.div
+                key="workstation"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="grid grid-cols-1 lg:grid-cols-12 gap-8 h-full"
+              >
+                {/* Coluna 1: O Herói (Esquerda) */}
+                <motion.div
+                  initial={{ opacity: 0, x: -50 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  className="lg:col-span-3 xl:col-span-2 space-y-6"
+                >
+                    <div className="flex items-center gap-4 group">
+                    <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-black text-sm shadow-[0_0_20px_var(--accent-glow)]">1</div>
+                    <h2 className="text-xl font-black tracking-tighter uppercase text-primary">O Herói</h2>
+                  </div>
+
+                  <div className="celestial-card p-1 overflow-hidden">
+                    <CharacterSelector
+                      value={selectedCharacter}
+                      onChange={(val) => { setSelectedCharacter(val); play("click"); }}
+                      disabled={isGenerating || isGeneratingVideo}
+                    />
+                  </div>
+                </motion.div>
+
+                {/* Coluna 2: Configurações (Meio) */}
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="lg:col-span-5 xl:col-span-6 space-y-5"
+                >
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2 group">
+                      <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white font-black text-[10px] shadow-[0_0_15px_var(--accent-glow)]">2</div>
+                      <h2 className="text-sm font-black tracking-tighter uppercase text-primary">Estilos</h2>
+                    </div>
+
+                    <div className="celestial-card p-3">
+
+                      <ModelSelector
+                        value={selectedStyle}
+                        onChange={(val) => { setSelectedStyle(val); play("click"); }}
+                        disabled={isGenerating || isGeneratingVideo}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2 group">
+                      <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white font-black text-[10px] shadow-[0_0_15px_var(--accent-glow)]">3</div>
+                      <h2 className="text-sm font-black tracking-tighter uppercase text-primary">Tamanhos</h2>
+                    </div>
+
+                    <div className="flex flex-wrap gap-1.5 celestial-card p-1.5 border-border">
+                      {IMAGE_SIZES.map((size) => (
+                        <button
+                          key={size.id}
+                          className={cn(
+                            "flex-1 flex items-center justify-center gap-2 py-2 rounded-xl transition-all duration-300 border",
+                            selectedSize.id === size.id
+                              ? "bg-white text-black border-transparent shadow-xl"
+                              : "bg-white/5 border-white/5 text-white/30 hover:text-white"
+                          )}
+                          onClick={() => { setSelectedSize(size); play("click"); }}
+                          disabled={isGenerating}
                         >
-                          <Download className="w-4 h-4 mr-2" />
-                          BAIXAR HD
-                        </Button>
+                          <span className="text-sm">{size.icon}</span>
+                          <span className="text-[8px] uppercase font-black tracking-widest">{size.label.split(' ')[0]}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
 
-                        {/* Social Buttons */}
-                        <div className="flex items-center bg-white/10 backdrop-blur-md rounded-xl p-1 border border-white/10">
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            className="h-10 w-10 text-green-400 hover:text-green-300 hover:bg-green-500/10"
-                            onClick={() => handleShare('whatsapp')}
-                            title="Compartilhar no WhatsApp"
-                          >
-                            <MessageCircle className="w-5 h-5" />
-                          </Button>
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            className="h-10 w-10 text-blue-400 hover:text-blue-300 hover:bg-blue-500/10"
-                            onClick={() => handleShare('facebook')}
-                            title="Compartilhar no Facebook"
-                          >
-                            <Facebook className="w-5 h-5" />
-                          </Button>
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            className="h-10 w-10 text-pink-400 hover:text-pink-300 hover:bg-pink-500/10"
-                            onClick={() => handleShare('general')}
-                            title="Compartilhar no Instagram/Outros"
-                          >
-                            <Instagram className="w-5 h-5" />
-                          </Button>
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2 group">
+                      <div className="w-8 h-8 rounded-full bg-accent flex items-center justify-center text-white font-black text-[10px] shadow-[0_0_15px_var(--accent-glow)]">4</div>
+                      <h2 className="text-sm font-black tracking-tighter uppercase text-primary">Detalhes</h2>
+                    </div>
+
+                    <div className="relative group/input">
+                      <Input
+                        placeholder="Ex: Segurando espada de gelo..."
+                        value={customPrompt}
+                        onChange={(e) => setCustomPrompt(e.target.value)}
+                        className="glass-panel h-11 rounded-xl border-border focus:border-primary/50 text-[10px] px-4 uppercase font-black tracking-widest placeholder:text-foreground/35"
+
+                      />
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="absolute right-1 top-1/2 -translate-y-1/2 h-8 px-3 hover:bg-cyan-500/10 text-cyan-400 font-black text-[8px] uppercase tracking-widest rounded-lg"
+                        onClick={handleEnhance}
+                        disabled={isGenerating || isEnhancing || !customPrompt.trim()}
+                      >
+                        {isEnhancing ? "..." : "Otimizar"}
+                      </Button>
+                    </div>
+                  </div>
+
+                  {currentPrompt && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="w-full glass-panel p-4 rounded-2xl border-white/5 relative group"
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-[10px] font-black text-secondary uppercase tracking-[0.3em] font-mono">Fórmula Celestial</span>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-6 px-3 text-[8px] font-black bg-secondary/20 hover:bg-secondary/30 text-secondary-foreground rounded-full transition-all uppercase tracking-widest"
+                          onClick={() => handleCopyPrompt(currentPrompt!)}
+                        >
+                          {copied ? "Sincronizado" : "Capturar Prompt"}
+                        </Button>
+                      </div>
+                      <p className="text-[11px] text-foreground font-medium leading-relaxed italic truncate opacity-90">"{currentPrompt}"</p>
+
+
+
+                    </motion.div>
+                  )}
+                </motion.div>
+
+                {/* Coluna 3: Preview + Ações (Direita) */}
+                <motion.div
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  className="lg:col-span-4 xl:col-span-4 flex flex-col gap-4"
+                >
+                  <Card className="celestial-card relative flex-1 min-h-[300px] lg:min-h-[400px] overflow-hidden shadow-2xl border-border">
+
+
+                    <div className="absolute inset-0 bg-noise opacity-[0.03] pointer-events-none" />
+                    {generatedImage || generatedVideo ? (
+                      <div className="relative w-full h-full p-2 group/image">
+                        {generatedVideo ? (
+                          <video 
+                            src={generatedVideo} 
+                            controls 
+                            autoPlay 
+                            loop 
+                            playsInline 
+                            className="object-contain w-full h-full rounded-[2rem] bg-black dark:brightness-[0.85] dark:contrast-[1.05] hover:brightness-100 transition-all duration-300" 
+                          />
+                        ) : (
+                          <img 
+                            src={generatedImage!} 
+                            alt="Arte" 
+                            className="w-full h-full object-contain rounded-[2rem] dark:brightness-[0.85] dark:contrast-[1.05] hover:brightness-100 transition-all duration-300" 
+                          />
+                        )}
+
+                        <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover/image:opacity-100 transition-opacity">
+                          <Button size="icon" variant="secondary" onClick={handleDownload} className="w-10 h-10 rounded-full shadow-xl"><Download className="w-4 h-4" /></Button>
                         </div>
                       </div>
-                    </div>
-                  </div>
-                </div>
-              ) : isGenerating || isGeneratingVideo ? (
-                <div className="absolute inset-0 flex flex-col items-center justify-center p-12 text-center">
-                  <div className="w-full max-w-[200px] aspect-square relative mb-8">
-                    <div className="absolute inset-0 rounded-full border-4 border-primary/20 animate-ping" />
-                    <div className="absolute inset-0 rounded-full border-4 border-t-primary animate-spin" />
-                    <div className="absolute inset-4 rounded-full bg-primary/10 backdrop-blur-md flex items-center justify-center">
-                      {isGeneratingVideo ? <Video className="w-12 h-12 text-purple-400 animate-pulse" /> : <Sparkles className="w-12 h-12 text-primary animate-pulse" />}
-                    </div>
-                  </div>
-                  <h3 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-cyan-400 animate-pulse">
-                    {isGeneratingVideo ? "Animando a Lenda..." : "Invocando Lenda..."}
-                  </h3>
-                  <p className="text-white/40 mt-4 text-sm tracking-widest uppercase">
-                    {isGeneratingVideo ? "Gerando quadros do vídeo, pode levar alguns segundos" : "A IA está desenhando cada detalhe"}
-                  </p>
-                </div>
-              ) : (
-                <div className="absolute inset-0 flex flex-col items-center justify-center p-12 text-center space-y-6">
-                  <div className="w-32 h-32 rounded-3xl bg-white/5 border border-white/10 flex items-center justify-center mb-4 transform rotate-3 group-hover:rotate-6 transition-transform duration-500">
-                    <Sparkles className="w-12 h-12 text-white/20 group-hover:text-white/40 transition-colors" />
-                  </div>
-                  <div>
-                    <h3 className="text-2xl font-bold text-white mb-2">Tela em Branco</h3>
-                    <p className="text-white/40 max-w-xs mx-auto">
-                      Selecione um personagem e um estilo para começar a mágica.
-                    </p>
-                  </div>
-                </div>
-              )}
-            </Card>
-
-            {currentPrompt && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="w-full mt-6 p-4 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md relative group max-w-2xl"
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest flex items-center">
-                    <Sparkles className="w-3 h-3 mr-2 text-cyan-400" />
-                    Prompt da IA
-                  </span>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="h-8 px-3 text-[10px] font-bold bg-white/5 hover:bg-white/10 text-white rounded-lg transition-all"
-                    onClick={() => handleCopyPrompt(currentPrompt)}
-                  >
-                    {copied ? (
-                      <><Check className="w-3 h-3 mr-1.5 text-emerald-400" /> COPIADO</>
+                    ) : isGenerating || isGeneratingVideo ? (
+                      <div className="absolute inset-0 flex flex-col items-center justify-center p-12 text-center bg-black/20">
+                        <div className="relative w-20 h-20 mb-4">
+                          <div className="absolute inset-0 border-2 border-primary/20 rounded-full animate-ping" />
+                          <div className="absolute inset-0 border-2 border-t-secondary border-l-primary rounded-full animate-spin" />
+                          <Sparkles className="absolute inset-0 m-auto w-8 h-8 text-secondary animate-pulse" />
+                        </div>
+                        <h3 className="text-xs font-black uppercase tracking-[0.3em] text-glow">Manifestando...</h3>
+                      </div>
                     ) : (
-                      <><Copy className="w-3 h-3 mr-1.5" /> COPIAR PROMPT</>
+                      <div className="absolute inset-0 flex flex-col items-center justify-center p-12 text-center opacity-30">
+                        <div className="w-16 h-16 glass-panel rounded-3xl flex items-center justify-center mb-6 rotate-12 celestial-border">
+                          <Sparkles className="w-6 h-6 text-white" />
+                        </div>
+                        <h3 className="text-xs font-black tracking-widest uppercase">Visualizador</h3>
+                      </div>
                     )}
-                  </Button>
-                </div>
-                <div className="max-h-24 overflow-y-auto pr-2 custom-scrollbar">
-                  <p className="text-xs text-white/60 font-medium leading-relaxed italic">
-                    "{currentPrompt}"
-                  </p>
-                </div>
+                  </Card>
+
+                  {/* Ações Fixas (Garantir Visibilidade) */}
+                  <div className="sticky bottom-0 space-y-4 pt-4 bg-background/50 backdrop-blur-xl -mx-2 px-2 pb-2 rounded-t-3xl z-20 border-t border-border/50">
+                    <div className="grid grid-cols-2 gap-3">
+                        <Button
+                        onClick={() => { handleGenerate(); play("click"); }}
+                        className="h-14 rounded-2xl bg-foreground text-background font-black uppercase tracking-[0.2em] text-[10px] shadow-2xl hover:scale-[1.02] active:scale-[0.98] transition-all"
+                        disabled={isGenerating || isGeneratingVideo}
+                        >
+                        <Wand2 className="w-4 h-4 mr-2" /> Gerar Foto
+                        </Button>
+                        <Button
+                        onClick={() => { if (apiKey) handleGenerateVideo(); }}
+                        className={cn(
+                            "h-14 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] transition-all shadow-2xl",
+                            apiKey ? "bg-[#6366f1] text-white shadow-[#6366f1]/20 hover:scale-[1.02]" : "bg-muted text-muted-foreground border-border cursor-not-allowed"
+                        )}
+                        disabled={isGenerating || isGeneratingVideo || !apiKey}
+                        >
+                        <Video className="w-4 h-4 mr-2" /> Gerar Vídeo
+                        </Button>
+                    </div>
+
+                    {(currentPrompt || generatedImage) && (
+                        <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="glass-panel p-3 rounded-2xl border-border bg-card shadow-lg"
+                        >
+                        <div className="flex items-center justify-between mb-1.5">
+                            <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em]">IA Formula</span>
+                            <button onClick={() => handleCopyPrompt(currentPrompt || "")} className="text-[8px] font-black hover:text-primary text-foreground uppercase tracking-widest flex items-center gap-1.5 transition-colors">
+                            <Copy className="w-2.5 h-2.5" /> {copied ? "Sincronizado" : "Copiar"}
+                            </button>
+                        </div>
+
+                        <p className="text-[11px] text-foreground font-medium leading-relaxed italic line-clamp-2">"{currentPrompt || "Aguardando invocação..."}"</p>
+
+
+                        </motion.div>
+                    )}
+                  </div>
+
+                </motion.div>
               </motion.div>
             )}
 
-            {/* Footer Note */}
-            <p className="mt-8 text-[10px] uppercase font-bold tracking-widest text-white/10">
-              Ai Anime Legends Generator • Powered by Pollinations
-            </p>
-          </motion.div>
-
-          {/* Gallery Section */}
-          <div className="col-span-1 lg:col-span-12 w-full">
-            <Gallery images={images} onRemove={removeImage} onSelect={(url) => {
-              setGeneratedImage(url);
-              const item = images.find(img => img.url === url);
-              if (item?.prompt) setCurrentPrompt(item.prompt);
-            }} />
-          </div>
-
-          {/* Mural da Comunidade (Seção Pública Global) */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.2 }}
-            className="col-span-1 lg:col-span-12 mt-12 mb-20"
-          >
-            <div className="flex flex-col items-center gap-4 mb-12">
-              <div className="h-[2px] w-24 bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
-              <div className="space-y-2">
-                <h2 className="text-4xl md:text-6xl font-black text-center tracking-tighter bg-clip-text text-transparent bg-gradient-to-b from-white to-white/30">
-                  Mural das Lendas
-                </h2>
-                <div className="flex items-center justify-center gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  <p className="text-white/40 text-[10px] font-bold uppercase tracking-[0.3em]">Criações Globais da Comunidade Live</p>
+            {activeTab === "gallery" && (
+              <motion.div
+                key="gallery"
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 1.02 }}
+                className="h-full overflow-y-auto no-scrollbar py-8"
+              >
+                <div className="flex flex-col gap-4 mb-8">
+                  <h2 className="text-3xl font-black uppercase tracking-tighter">Seus Fragmentos</h2>
+                  <p className="text-[10px] font-black text-white/30 uppercase tracking-[0.4em]">Criações locais desta sessão</p>
                 </div>
-              </div>
-            </div>
-            
-            <CommunityFeed />
-          </motion.div>
+                <Gallery
+                  images={images}
+                  onRemove={removeImage}
+                  onSelect={(url) => {
+                    setGeneratedImage(url);
+                    const item = images.find(img => img.url === url);
+                    if (item?.prompt) setCurrentPrompt(item.prompt);
+                    setActiveTab("workstation");
+                  }}
+                />
+              </motion.div>
+            )}
 
+            {activeTab === "mural" && (
+              <motion.div
+                key="mural"
+                initial={{ opacity: 0, y: 50 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 1, y: 50 }}
+                className="h-full overflow-y-auto no-scrollbar pb-32"
+              >
+                <div className="flex flex-col items-center gap-12 pt-12">
+                  <div className="flex flex-col items-center text-center space-y-4">
+                  <h2 className="text-4xl md:text-6xl font-black uppercase tracking-tighter text-glow">O Mural</h2>
+                  <p className="text-[10px] font-black text-foreground/65 uppercase tracking-[0.6em]">Conexão Neural Global</p>
+
+                  </div>
+                  <CommunityFeed />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
-        {/* Footer with Credits */}
-        <footer className="mt-20 py-10 border-t border-white/5 text-center space-y-6">
-          <div className="flex flex-col items-center justify-center space-y-4">
-            <a
-              href="https://pollinations.ai"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group transition-all hover:scale-105"
-            >
-              <div className="flex items-center space-x-3 bg-white/5 backdrop-blur-xl border border-white/10 px-6 py-3 rounded-2xl shadow-2xl group-hover:border-primary/50 group-hover:bg-white/10 transition-all">
-                <span className="text-white/40 font-bold text-[10px] tracking-[0.2em] uppercase">Built with</span>
-                <div className="h-6 w-px bg-white/10" />
-                <img
-                  src="https://pollinations.ai/logo_text_white.png"
-                  alt="Pollinations.ai Logo"
-                  className="h-5 opacity-80 group-hover:opacity-100 transition-opacity"
-                />
-              </div>
-            </a>
-
-            <div className="flex items-center space-x-6">
-              <p className="text-white/20 text-[10px] font-bold tracking-[0.3em] uppercase">
-                © {new Date().getFullYear()} ANIME LEGENDS • AI ART GENERATOR
-              </p>
-            </div>
-
-            <div className="flex items-center space-x-4">
-              <a href="https://github.com/Caas2023/anime-transformer" target="_blank" className="text-white/20 hover:text-white/60 transition-colors">
-                <Github className="w-5 h-5" />
-              </a>
-            </div>
-          </div>
-
-          <div className="max-w-md mx-auto">
-            <p className="text-white/10 text-[9px] leading-relaxed uppercase tracking-tighter">
-              Utilizando Imagen-4 + GPT-4o via Pollinations API. Todas as imagens são geradas por inteligência artificial.
-              Respeite os termos de uso da plataforma.
-            </p>
-          </div>
-        </footer>
+        {/* Global Navigation Tabs */}
+        <div className="fixed bottom-0 left-0 right-0 h-16 glass-panel border-t border-white/5 flex items-center justify-center gap-12 z-[100] bg-black/80 backdrop-blur-3xl px-8">
+          <button
+            onClick={() => { setActiveTab("workstation"); play("click"); }}
+            className={cn(
+              "text-[9px] font-black uppercase tracking-[0.3em] transition-all flex items-center gap-2 px-6 py-2 rounded-full",
+              activeTab === "workstation" ? "text-primary bg-primary/10 shadow-[0_0_20px_rgba(16,185,129,0.2)]" : "text-white/20 hover:text-white"
+            )}
+          >
+            <Sparkles className="w-3 h-3" /> Workstation
+          </button>
+          <button
+            onClick={() => { setActiveTab("gallery"); play("click"); }}
+            className={cn(
+              "text-[9px] font-black uppercase tracking-[0.3em] transition-all flex items-center gap-2 px-6 py-2 rounded-full",
+              activeTab === "gallery" ? "text-secondary bg-secondary/10 shadow-[0_0_20px_rgba(245,158,11,0.2)]" : "text-white/20 hover:text-white"
+            )}
+          >
+            <RefreshCw className="w-3 h-3" /> Galeria
+          </button>
+          <button
+            onClick={() => { setActiveTab("mural"); play("click"); }}
+            className={cn(
+              "text-[9px] font-black uppercase tracking-[0.3em] transition-all flex items-center gap-2 px-6 py-2 rounded-full",
+              activeTab === "mural" ? "text-accent bg-accent/10 shadow-[0_0_20px_rgba(6,182,212,0.2)]" : "text-white/20 hover:text-white"
+            )}
+          >
+            <Share2 className="w-3 h-3" /> Mural
+          </button>
+        </div>
       </div>
-    </main >
+    </main>
   );
 }
+
+
+
+

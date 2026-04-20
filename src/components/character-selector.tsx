@@ -69,8 +69,7 @@ export function CharacterSelector({ value, onChange, disabled }: CharacterSelect
           const colors = colorClasses[char.color];
           const isSelected = value === char.id;
           
-          const charSeed = char.id.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
-          const photoUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(char.label + " anime portrait")}?width=200&height=200&nologo=true&seed=${charSeed}`;
+          const photoUrl = `/avatars/${char.id}.jpg`;
 
           return (
             <button

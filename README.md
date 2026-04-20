@@ -1,18 +1,22 @@
-# Anime Legends Generator 🎨
+<div align="center">
+  <img src="public/logo.png" width="150" height="150" style="border-radius: 50%; box-shadow: 0 0 20px cyan;" alt="Ai Anime Legends Logo" />
+</div>
 
-Gere artes épicas dos seus personagens favoritos de anime usando **duas camadas de Inteligência Artificial**.
+# Ai Anime Legends Generator 🎨
+
+Gere artes e **vídeos épicos** dos seus personagens favoritos de anime usando **fluxos avançados de Inteligência Artificial**.
 
 ## 🧠 Como Funciona
 
-1. **GPT-4o (IA de Texto)** — Cria um prompt único e detalhado para cada geração.
-2. **Imagen-4 (IA de Imagem)** — Transforma o prompt em uma obra-prima visual.
+1. **GPT-4o (IA de Texto)** — Enriquece a sua ideia crua gerando um super-prompt descritivo em inglês.
+2. **Pollinations AI (Image & Video)** — Transforma o super-prompt em uma arte fantástica ou em **vídeos animados (MP4)**.
 
 ## 🚀 Tecnologias
 
 - **Next.js 16** (App Router + Server Actions)
 - **Tailwind CSS v4** (Design System)
 - **Framer Motion** (Animações Premium)
-- **Pollinations.ai API** (Texto + Imagem)
+- **Pollinations.ai API** (Geração Gratuita Custo-Zero de Imagens + Vídeo)
 - **Supabase** (Storage + Database)
 
 ## 🎮 Personagens Disponíveis
@@ -23,15 +27,15 @@ Goku • Naruto • Luffy • Sailor Moon • Ichigo • Zoro • Nezuko • Goj
 
 Flux Original • Realista • 3D Render • Retro 90s • Mangá • Cyberpunk • Aquarela • Sombrio
 
-## ⚡ Funcionalidades
+## ⚡ Novas Funcionalidades (BYOP & Video)
 
-- ✅ Prompts dinâmicos gerados por IA (nunca se repetem)
-- ✅ Botão "Melhorar" com IA para refinar detalhes extras
-- ✅ Galeria local com até 50 imagens
-- ✅ Download em HD
-- ✅ Compartilhamento via WhatsApp/Facebook/Instagram
+- 💸 **Bring Your Own Pollen (BYOP):** Conecte com sua própria cota do *Pollinations*. O aplicativo lê o token secretamente através da URL fragmentada.
+- 🎬 **Criação de Vídeo MP4 (Exclusivo):** Ao autenticar com o BYOP, libere o botão "Animar Lenda" que baixa animações em vídeo utilizando Streaming Client-Side (resiliência a timeouts).
+- ✅ Prompts dinâmicos e enriquecidos com IA na hora.
+- ✅ Botão auto-mágico "Melhorar Prompt"
+- ✅ Player Cinematográfico na Galeria para rodar os Vídeos.
+- ✅ Download Direto & WebShare API Compartilhamento.
 - ✅ Efeitos sonoros procedurais (Web Audio API)
-- ✅ Design cyberpunk responsivo
 
 ## 🔧 Como Rodar Localmente
 

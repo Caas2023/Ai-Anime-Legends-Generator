@@ -232,6 +232,25 @@ async function fetchFromPollinations(
   return null;
 }
 
+// === EXPORTAÇÃO DE PROMPT (útil para Vídeos) ===
+export async function composePrompt(
+  characterId: string,
+  styleId: string,
+  customPrompt?: string,
+  apiKey?: string
+): Promise<string> {
+  const characterLabel = CHARACTERS[characterId] || characterId;
+  const styleLabel = STYLES[styleId] || styleId;
+
+  let finalPrompt = await getDynamicPrompt(characterLabel, styleLabel, customPrompt || "", apiKey);
+  if (!finalPrompt) {
+    finalPrompt = `anime masterpiece, ${characterLabel}, ${styleLabel}, ${
+      customPrompt || ""
+    }, detailed face, cinematic`;
+  }
+  return finalPrompt;
+}
+
 // === FUNÇÃO PRINCIPAL ===
 export async function generateImage(
   characterId: string,

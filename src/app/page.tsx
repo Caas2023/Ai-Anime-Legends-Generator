@@ -3,14 +3,14 @@
 import * as React from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { Wand2, Download, RefreshCw, Sparkles, AlertCircle, Instagram, Facebook, MessageCircle, Share2, Github, Copy, Check } from "lucide-react";
+import { Wand2, Download, RefreshCw, Sparkles, AlertCircle, Instagram, Facebook, MessageCircle, Share2, Github, Copy, Check, Video, Play } from "lucide-react";
 
 import { CharacterSelector, CHARACTERS } from "@/components/character-selector";
 import { ModelSelector, ART_STYLES } from "@/components/model-selector";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { generateImage } from "@/actions/generate";
+import { generateImage, composePrompt } from "@/actions/generate";
 import { Gallery } from "@/components/gallery";
 import { useGallery } from "@/hooks/use-gallery";
 import { useSound } from "@/hooks/use-sound";
@@ -34,8 +34,10 @@ export default function Home() {
   const [currentPrompt, setCurrentPrompt] = React.useState<string | null>(null);
   const [copied, setCopied] = React.useState(false);
   const [isGenerating, setIsGenerating] = React.useState(false);
+  const [isGeneratingVideo, setIsGeneratingVideo] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [apiKey, setApiKey] = React.useState<string | null>(null);
+  const [generatedVideo, setGeneratedVideo] = React.useState<string | null>(null);
   const { play } = useSound();
   const { images, addImage, removeImage } = useGallery();
 
@@ -111,6 +113,7 @@ export default function Home() {
     setError(null);
     setIsGenerating(true);
     setGeneratedImage(null);
+    setGeneratedVideo(null);
     setCurrentPrompt(null);
 
     const result = await generateImage(selectedCharacter, selectedStyle, customPrompt, selectedSize.width, selectedSize.height, apiKey || undefined);
@@ -128,6 +131,47 @@ export default function Home() {
     setIsGenerating(false);
   };
 
+  const handleGenerateVideo = async () => {
+    if (!apiKey) return;
+    setError(null);
+    setIsGeneratingVideo(true);
+    setGeneratedImage(null);
+    setGeneratedVideo(null);
+    setCurrentPrompt(null);
+    play("click");
+
+    try {
+      const finalPrompt = await composePrompt(selectedCharacter, selectedStyle, customPrompt, apiKey);
+      setCurrentPrompt(finalPrompt);
+
+      const truncated = finalPrompt.substring(0, 500);
+      const encoded = encodeURIComponent(truncated);
+      const seed = Math.floor(Math.random() * 999999);
+      
+      const url = `https://gen.pollinations.ai/video/${encoded}?seed=${seed}`;
+      
+      const response = await fetch(url, {
+        method: "GET",
+        headers: { "Authorization": `Bearer ${apiKey}` }
+      });
+
+      if (!response.ok) {
+        throw new Error("Falha ao gerar o vídeo. Tente novamente.");
+      }
+
+      const blob = await response.blob();
+      const objectUrl = URL.createObjectURL(blob);
+      
+      setGeneratedVideo(objectUrl);
+      play("success");
+    } catch (err: any) {
+      setError(err.message || "Algo deu errado na geração de vídeo");
+      play("error");
+    } finally {
+      setIsGeneratingVideo(false);
+    }
+  };
+
   const handleCopyPrompt = (text: string) => {
     navigator.clipboard.writeText(text);
     setCopied(true);
@@ -136,25 +180,23 @@ export default function Home() {
   };
 
   const handleDownload = () => {
-    if (!generatedImage) return;
+    if (!generatedImage && !generatedVideo) return;
     const link = document.createElement("a");
-    link.href = generatedImage;
-    link.download = `anime-legends-${selectedCharacter}-${Date.now()}.jpg`;
+    link.href = generatedVideo || generatedImage!;
+    link.download = `anime-legends-${selectedCharacter}-${Date.now()}.${generatedVideo ? 'mp4' : 'jpg'}`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   };
 
   const handleShare = async (platform: 'whatsapp' | 'facebook' | 'general') => {
-    if (!generatedImage) return;
+    if (!generatedImage && !generatedVideo) return;
 
-    // For local data URLs, we usually can't share directly via link on social APIs
-    // Best approach is Web Share API for mobile or instructions
     if (platform === 'general' && navigator.share) {
       try {
-        const response = await fetch(generatedImage);
+        const response = await fetch(generatedVideo || generatedImage!);
         const blob = await response.blob();
-        const file = new File([blob], 'anime-art.jpg', { type: 'image/jpeg' });
+        const file = new File([blob], `anime-art.${generatedVideo ? 'mp4' : 'jpg'}`, { type: generatedVideo ? 'video/mp4' : 'image/jpeg' });
         await navigator.share({
           files: [file],
           title: 'Minha Arte Anime',
@@ -214,8 +256,8 @@ export default function Home() {
           className="text-center space-y-3 md:space-y-4 mb-8 md:mb-12 pt-4 md:pt-8"
         >
           <div className="inline-flex items-center justify-center p-2 px-4 bg-white/5 rounded-full backdrop-blur-md border border-white/10 mb-2 md:mb-4 shadow-lg hover:bg-white/10 transition-colors">
-            <Sparkles className="w-4 h-4 text-cyan-400 mr-2" />
-            <span className="text-xs font-bold tracking-widest uppercase text-white/90">Anime Legends Generator</span>
+            <Image src="/logo.png" alt="Logo" width={24} height={24} className="rounded-full mr-2 shadow-cyan-500/50 shadow-sm" />
+            <span className="text-xs font-bold tracking-widest uppercase text-white/90">Anime Legends</span>
           </div>
           <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 drop-shadow-[0_0_15px_rgba(168,85,247,0.5)]">
             Ai Anime Legends Generator
@@ -341,27 +383,57 @@ export default function Home() {
               )}
             </AnimatePresence>
 
-            {/* Generate Button */}
-            <Button
-              size="lg"
-              className="w-full text-lg h-16 rounded-2xl bg-white text-black hover:bg-white/90 transition-all shadow-[0_0_40px_-10px_rgba(255,255,255,0.3)] hover:shadow-[0_0_60px_-15px_rgba(255,255,255,0.5)] hover:scale-[1.02] active:scale-[0.98] font-bold tracking-wide relative overflow-hidden group"
-              onClick={() => { handleGenerate(); play("click"); }}
-              onMouseEnter={() => play("hover")}
-              disabled={isGenerating}
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/50 to-transparent translate-x-[-100%] group-hover:animate-shimmer" />
-              {isGenerating ? (
-                <div className="flex items-center">
-                  <RefreshCw className="w-5 h-5 mr-3 animate-spin" />
-                  CRIANDO ARTE...
-                </div>
-              ) : (
-                <div className="flex items-center">
-                  <Wand2 className="w-5 h-5 mr-3" />
-                  GERAR OBRA-PRIMA
-                </div>
-              )}
-            </Button>
+            {/* Generate Buttons */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Button
+                size="lg"
+                className="w-full text-base md:text-sm lg:text-base h-16 rounded-2xl bg-white text-black hover:bg-white/90 transition-all shadow-[0_0_40px_-10px_rgba(255,255,255,0.3)] hover:shadow-[0_0_60px_-15px_rgba(255,255,255,0.5)] active:scale-[0.98] font-bold tracking-wide relative overflow-hidden group"
+                onClick={() => { handleGenerate(); play("click"); }}
+                onMouseEnter={() => play("hover")}
+                disabled={isGenerating || isGeneratingVideo}
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/50 to-transparent translate-x-[-100%] group-hover:animate-shimmer" />
+                {isGenerating ? (
+                  <div className="flex items-center">
+                    <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                    CRIANDO...
+                  </div>
+                ) : (
+                  <div className="flex items-center">
+                    <Wand2 className="w-4 h-4 mr-2" />
+                    GERAR FOTO
+                  </div>
+                )}
+              </Button>
+
+              <Button
+                size="lg"
+                className={cn(
+                  "w-full text-base md:text-sm lg:text-base h-16 rounded-2xl transition-all active:scale-[0.98] font-bold tracking-wide relative overflow-hidden group border",
+                  apiKey 
+                    ? "bg-gradient-to-r from-purple-500 to-indigo-600 text-white hover:opacity-90 border-transparent shadow-[0_0_30px_-10px_rgba(168,85,247,0.5)]" 
+                    : "bg-white/5 text-white/30 border-white/10 cursor-not-allowed"
+                )}
+                onClick={() => { if(apiKey) { handleGenerateVideo(); } }}
+                onMouseEnter={() => { if(apiKey) play("hover"); }}
+                disabled={isGenerating || isGeneratingVideo || !apiKey}
+                title={!apiKey ? "Requer conexão Pollen (BYOP) no topo da página" : "Gerar animação de vídeo exclusiva"}
+              >
+                {!apiKey && <div className="absolute inset-0 bg-black/60 z-10 flex flex-col items-center justify-center text-[10px] uppercase tracking-widest text-white/60"><span className="text-white/40 mb-1">Bloqueado</span><span>Conecte Pollen</span></div>}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:animate-shimmer" />
+                {isGeneratingVideo ? (
+                  <div className="flex items-center relative z-0">
+                    <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                    ANIMANDO...
+                  </div>
+                ) : (
+                  <div className="flex items-center relative z-0">
+                    <Video className="w-4 h-4 mr-2" />
+                    GERAR VÍDEO
+                  </div>
+                )}
+              </Button>
+            </div>
           </motion.div>
 
           {/* Result Section */}
@@ -376,7 +448,7 @@ export default function Home() {
               {/* Scanline Effect */}
               <div className="absolute inset-0 bg-[linear-gradient(to_bottom,transparent_50%,rgba(0,0,0,0.3)_50%)] bg-[length:100%_4px] pointer-events-none opacity-20" />
 
-              {generatedImage ? (
+              {generatedImage || generatedVideo ? (
                 <div className="relative w-full h-full p-3 group">
                   <motion.div
                     initial={{ opacity: 0, scale: 1.1 }}
@@ -384,14 +456,25 @@ export default function Home() {
                     transition={{ duration: 0.5 }}
                     className="relative w-full h-full"
                   >
-                    <Image
-                      src={generatedImage}
-                      alt="Arte Gerada"
-                      fill
-                      sizes="(max-width: 768px) 100vw, 50vw"
-                      className="object-cover rounded-2xl shadow-inner"
-                      priority
-                    />
+                    {generatedVideo ? (
+                      <video
+                        src={generatedVideo}
+                        controls
+                        autoPlay
+                        loop
+                        playsInline
+                        className="object-cover w-full h-full rounded-2xl shadow-inner bg-black"
+                      />
+                    ) : (
+                      <Image
+                        src={generatedImage!}
+                        alt="Arte Gerada"
+                        fill
+                        sizes="(max-width: 768px) 100vw, 50vw"
+                        className="object-cover rounded-2xl shadow-inner"
+                        priority
+                      />
+                    )}
                   </motion.div>
 
                   {/* Overlay Actions */}
@@ -452,20 +535,20 @@ export default function Home() {
                     </div>
                   </div>
                 </div>
-              ) : isGenerating ? (
+              ) : isGenerating || isGeneratingVideo ? (
                 <div className="absolute inset-0 flex flex-col items-center justify-center p-12 text-center">
                   <div className="w-full max-w-[200px] aspect-square relative mb-8">
                     <div className="absolute inset-0 rounded-full border-4 border-primary/20 animate-ping" />
                     <div className="absolute inset-0 rounded-full border-4 border-t-primary animate-spin" />
                     <div className="absolute inset-4 rounded-full bg-primary/10 backdrop-blur-md flex items-center justify-center">
-                      <Sparkles className="w-12 h-12 text-primary animate-pulse" />
+                      {isGeneratingVideo ? <Video className="w-12 h-12 text-purple-400 animate-pulse" /> : <Sparkles className="w-12 h-12 text-primary animate-pulse" />}
                     </div>
                   </div>
                   <h3 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-cyan-400 animate-pulse">
-                    Invocando Lenda...
+                    {isGeneratingVideo ? "Animando a Lenda..." : "Invocando Lenda..."}
                   </h3>
                   <p className="text-white/40 mt-4 text-sm tracking-widest uppercase">
-                    A IA está desenhando cada detalhe
+                    {isGeneratingVideo ? "Gerando quadros do vídeo, pode levar alguns segundos" : "A IA está desenhando cada detalhe"}
                   </p>
                 </div>
               ) : (

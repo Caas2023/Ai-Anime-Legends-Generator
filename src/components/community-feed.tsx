@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Download, Eye, Play, Sparkles } from "lucide-react";
+import { Download, Eye, Play, Sparkles, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/supabase";
 
@@ -14,6 +14,44 @@ interface feedItem {
   prompt: string;
   is_video: boolean;
   created_at: string;
+}
+
+function ImageWithFallback({ src, alt, className }: { src: string; alt: string; className?: string }) {
+  const [error, setError] = React.useState(false);
+  const [loading, setLoading] = React.useState(true);
+
+  return (
+    <div className={cn("relative w-full h-full bg-white/5", className)}>
+      {loading && (
+        <div className="absolute inset-0 flex items-center justify-center animate-pulse bg-white/5">
+          <Sparkles className="w-6 h-6 text-white/10" />
+        </div>
+      )}
+      
+      {error ? (
+        <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center bg-zinc-900">
+          <AlertCircle className="w-8 h-8 text-white/20 mb-2" />
+          <p className="text-[10px] text-white/40 uppercase font-bold tracking-tighter leading-tight">
+            Imagem Indisponível
+          </p>
+        </div>
+      ) : (
+        <img
+          src={src}
+          alt={alt}
+          className={cn(
+            "w-full h-full object-cover transition-opacity duration-500",
+            loading ? "opacity-0" : "opacity-100"
+          )}
+          onLoad={() => setLoading(false)}
+          onError={() => {
+            setError(true);
+            setLoading(false);
+          }}
+        />
+      )}
+    </div>
+  );
 }
 
 export function CommunityFeed() {
@@ -94,11 +132,10 @@ export function CommunityFeed() {
               exit={{ opacity: 0, scale: 0.8 }}
               className="group relative aspect-[3/4] rounded-2xl overflow-hidden border border-white/10 bg-white/5 shadow-2xl transition-all hover:border-primary/40"
             >
-              <img
+              <ImageWithFallback
                 src={item.image_url}
                 alt={item.prompt}
                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                loading="lazy"
               />
               
               {/* Overlay */}

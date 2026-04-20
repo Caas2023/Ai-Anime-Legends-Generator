@@ -344,9 +344,10 @@ export async function generateImage(
           finalUrl = publicUrl;
         } else {
           // Se falhou o storage, use o link direto do Pollinations (que é permanente)
-          // Geramos o link direto novamente para garantir que temos um URL e não apenas o buffer
-          const encoded = encodeURIComponent(finalPrompt);
-          finalUrl = `https://pollinations.ai/p/${encoded}?width=${width}&height=${height}&model=${targetModel}&seed=${Math.floor(Math.random()*1000)}`;
+          // Usamos o ID do personagem e o Seed para manter a URL curta e resiliente
+          const shortSlug = encodeURIComponent(characterId);
+          finalUrl = `https://pollinations.ai/p/${shortSlug}?width=${width}&height=${height}&model=${targetModel}&seed=${Math.floor(Math.random()*1000000)}&nologo=true`;
+          console.warn("[MURAL] Usando link de fallback por falha no Storage");
         }
 
         // Salva na tabela do Mural Público

@@ -2,17 +2,16 @@
 
 import * as React from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Download, Eye, Play, Sparkles } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/supabase";
-import { Play, Eye, Download, Share2, Sparkles } from "lucide-react";
-import { Button } from "./ui/button";
-import { cn } from "@/lib/utils";
 
 interface feedItem {
   id: string;
   image_url: string;
-  prompt: string;
   character_id: string;
   style_id: string;
+  prompt: string;
   is_video: boolean;
   created_at: string;
 }
@@ -38,7 +37,6 @@ export function CommunityFeed() {
       setItems(data || []);
     } catch (err: any) {
       console.error("[MURAL ERROR]", err.message);
-      // Se o erro for de tabela não encontrada, setItems([]) fará mostrar "Mural Vazio"
       setItems([]);
     } finally {
       setLoading(false);
@@ -68,9 +66,9 @@ export function CommunityFeed() {
 
   if (loading) {
     return (
-      <div className="w-full grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-        {[...Array(10)].map((_, i) => (
-          <div key={i} className="aspect-[3/4] bg-white/5 rounded-2xl animate-pulse" />
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
+        {[...Array(5)].map((_, i) => (
+          <div key={i} className="aspect-[3/4] rounded-2xl bg-white/5 animate-pulse border border-white/10" />
         ))}
       </div>
     );
@@ -78,6 +76,13 @@ export function CommunityFeed() {
 
   return (
     <div className="w-full space-y-8">
+      {!supabase && (
+        <div className="w-full p-6 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-200 text-sm flex flex-col items-center gap-2 text-center">
+          <p className="font-bold">⚠️ Mural em modo Offline</p>
+          <p className="opacity-80">As variáveis de ambiente do Supabase não foram detectadas no seu painel da Vercel. Configure <b>NEXT_PUBLIC_SUPABASE_URL</b> e <b>NEXT_PUBLIC_SUPABASE_ANON_KEY</b> para ativar a galeria global.</p>
+        </div>
+      )}
+
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
         <AnimatePresence mode="popLayout">
           {items.map((item) => (
@@ -150,12 +155,15 @@ export function CommunityFeed() {
         </AnimatePresence>
       </div>
 
-      {items.length === 0 && (
+      {items.length === 0 && supabase && (
         <div className="w-full flex flex-col items-center justify-center py-20 border-2 border-dashed border-white/5 rounded-3xl bg-white/[0.02]">
           <Sparkles className="w-12 h-12 text-white/5 mb-4" />
-          <p className="text-white/20 font-bold uppercase tracking-[0.3em] text-sm text-center">
-            O Mural está vazio.<br />Seja o primeiro a criar uma lenda!
-          </p>
+          <div className="text-center space-y-2">
+            <p className="text-white/20 font-bold uppercase tracking-[0.3em] text-sm">
+              O Mural está vazio.
+            </p>
+            <p className="text-white/10 text-[10px] uppercase tracking-widest">Seja o primeiro a criar uma lenda e compartilhá-la com o mundo!</p>
+          </div>
         </div>
       )}
     </div>

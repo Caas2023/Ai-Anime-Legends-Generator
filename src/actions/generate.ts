@@ -350,19 +350,30 @@ export async function generateImage(
         }
 
         // Salva na tabela do Mural Público
-        await supabase.from("community_feed").insert({
-          image_url: finalUrl,
-          character_id: characterId,
-          style_id: styleId,
-          prompt: finalPrompt,
-          is_video: false
-        });
+        if (supabase) {
+           console.log(`[MURAL] Tentando salvar lenda: ${characterId} style: ${styleId}`);
+           const { error: feedError } = await supabase.from("community_feed").insert({
+            image_url: finalUrl,
+            character_id: characterId,
+            style_id: styleId,
+            prompt: finalPrompt,
+            is_video: false
+          });
+          
+          if (feedError) {
+             console.error("[MURAL ERROR] Falha ao inserir registro:", feedError.message);
+          } else {
+             console.log("[MURAL] Registro inserido com sucesso!");
+          }
+        } else {
+           console.warn("[MURAL] Supabase não iniciado. Registro ignorado.");
+        }
 
         if (!uploadError) {
            return { success: true, imageUrl: finalUrl, prompt: finalPrompt };
         }
-      } catch (err) {
-        console.warn("[SUPABASE FEED ERROR]", err);
+      } catch (err: any) {
+        console.warn("[SUPABASE FEED ERROR] Exceção capturada:", err.message);
       }
     }
 

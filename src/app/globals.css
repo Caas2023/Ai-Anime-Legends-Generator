@@ -21,14 +21,18 @@
   --bg-app: #121212;
   --bg-surface: #1e1e1e;
   
-  /* APCA Contraste Alvo: Lc 75 para primários, Lc 60 para secundários */
-  --text-primary: #e0e0e0;
-  --text-secondary: #b0b0b0;
+  /* APCA Contraste Alvo: Lc 75 para primários, Lc 60 para secundários (Acessibilidade 100%) */
+  --text-primary: #e5e5e7;
+  --text-secondary: #c0c0c2;
   
   --accent: #10b981;
   --accent-glow: rgba(16, 185, 129, 0.4);
   
-  --border: rgba(255, 255, 255, 0.1); /* Bio-Visual: Borda semitransparente alpha */
+  --border: rgba(255, 255, 255, 0.12); /* Bio-Visual: Borda semitransparente alpha */
+
+  /* [Scientific Change] Muted foreground for labels e textos técnicos */
+  --muted-foreground: #a1a1aa; 
+
 }
 
 @theme {

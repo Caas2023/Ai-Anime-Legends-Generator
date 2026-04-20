@@ -548,12 +548,17 @@ export default function Home() {
                             className="object-contain w-full h-full rounded-[2rem] bg-black dark:brightness-[0.85] dark:contrast-[1.05] hover:brightness-100 transition-all duration-300" 
                           />
                         ) : (
-                          <img 
-                            src={generatedImage!} 
-                            alt="Arte" 
-                            className="w-full h-full object-contain rounded-[2rem] dark:brightness-[0.85] dark:contrast-[1.05] hover:brightness-100 transition-all duration-300" 
-                          />
+                          <div className="relative w-full h-full">
+                            <Image 
+                              src={generatedImage!} 
+                              alt="Arte Anime Gerada" 
+                              fill
+                              priority
+                              className="object-contain rounded-[2rem] dark:brightness-[0.85] dark:contrast-[1.05] hover:brightness-100 transition-all duration-300" 
+                            />
+                          </div>
                         )}
+
 
                         <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover/image:opacity-100 transition-opacity">
                           <Button size="icon" variant="secondary" onClick={handleDownload} className="w-10 h-10 rounded-full shadow-xl"><Download className="w-4 h-4" /></Button>

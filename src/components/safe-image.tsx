@@ -1,7 +1,9 @@
 "use client";
 
 import * as React from "react";
+import Image from "next/image";
 import { cn } from "@/lib/utils";
+
 import { AlertCircle, Sparkles } from "lucide-react";
 
 interface SafeImageProps {
@@ -55,11 +57,13 @@ export function SafeImage({ src, alt, className, fallbackName, onLoad }: SafeIma
 
         </div>
       ) : (
-        <img
+        <Image
           src={src}
           alt={alt}
+          fill
+          unoptimized={src.startsWith('http')} 
           className={cn(
-            "w-full h-full object-cover transition-opacity duration-300",
+            "object-cover transition-opacity duration-300",
             error ? "opacity-0" : "opacity-100"
           )}
           onLoad={() => {
@@ -72,6 +76,7 @@ export function SafeImage({ src, alt, className, fallbackName, onLoad }: SafeIma
             setLoading(false);
           }}
         />
+
       )}
     </div>
   );

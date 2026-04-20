@@ -22,7 +22,10 @@ export function CommunityFeed() {
   const [loading, setLoading] = React.useState(true);
 
   const fetchFeed = React.useCallback(async () => {
-    if (!supabase) return;
+    if (!supabase) {
+      setLoading(false);
+      return;
+    }
     
     try {
       const { data, error } = await supabase
@@ -33,18 +36,24 @@ export function CommunityFeed() {
 
       if (error) throw error;
       setItems(data || []);
-    } catch (err) {
-      console.error("[FEED ERROR]", err);
+    } catch (err: any) {
+      console.error("[MURAL ERROR]", err.message);
+      // Se o erro for de tabela não encontrada, setItems([]) fará mostrar "Mural Vazio"
+      setItems([]);
     } finally {
       setLoading(false);
     }
   }, []);
 
   React.useEffect(() => {
+    if (!supabase) {
+      setLoading(false);
+      return;
+    }
+
     fetchFeed();
     
     // Subscribe to new items
-    if (!supabase) return;
     const channel = supabase
       .channel('feed-changes')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'community_feed' }, (payload) => {

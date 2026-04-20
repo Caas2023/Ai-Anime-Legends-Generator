@@ -13,8 +13,10 @@ import {
     Copy, 
     Video, 
     Settings, 
-    X 
+    X,
+    Check
 } from "lucide-react";
+
 import { ThemeToggle } from "@/components/theme-toggle";
 
 

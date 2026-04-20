@@ -389,7 +389,9 @@ export default function Home() {
                         showSettings && "bg-primary/10 border-primary/30 text-primary"
                     )}
                     onClick={() => setShowSettings(!showSettings)}
+                    aria-label="Configurações"
                 >
+
                     <Settings className={cn("w-5 h-5 transition-transform duration-500", showSettings && "rotate-90")} />
                 </Button>
             </div>
@@ -418,9 +420,10 @@ export default function Home() {
                   className="lg:col-span-3 xl:col-span-2 space-y-6"
                 >
                     <div className="flex items-center gap-4 group">
-                    <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-black text-sm shadow-[0_0_20px_var(--accent-glow)]">1</div>
+                    <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-background font-black text-sm shadow-[0_0_20px_var(--accent-glow)]">1</div>
                     <h2 className="text-xl font-black tracking-tighter uppercase text-primary">O Herói</h2>
                   </div>
+
 
                   <div className="celestial-card p-1 overflow-hidden">
                     <CharacterSelector
@@ -439,9 +442,10 @@ export default function Home() {
                 >
                   <div className="space-y-3">
                     <div className="flex items-center gap-2 group">
-                      <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white font-black text-[10px] shadow-[0_0_15px_var(--accent-glow)]">2</div>
+                      <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-background font-black text-[10px] shadow-[0_0_15px_var(--accent-glow)]">2</div>
                       <h2 className="text-sm font-black tracking-tighter uppercase text-primary">Estilos</h2>
                     </div>
+
 
                     <div className="celestial-card p-3">
 
@@ -455,9 +459,10 @@ export default function Home() {
 
                   <div className="space-y-3">
                     <div className="flex items-center gap-2 group">
-                      <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white font-black text-[10px] shadow-[0_0_15px_var(--accent-glow)]">3</div>
+                      <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-background font-black text-[10px] shadow-[0_0_15px_var(--accent-glow)]">3</div>
                       <h2 className="text-sm font-black tracking-tighter uppercase text-primary">Tamanhos</h2>
                     </div>
+
 
                     <div className="flex flex-wrap gap-1.5 celestial-card p-1.5 border-border">
                       {IMAGE_SIZES.map((size) => (
@@ -481,9 +486,10 @@ export default function Home() {
 
                   <div className="space-y-3">
                     <div className="flex items-center gap-2 group">
-                      <div className="w-8 h-8 rounded-full bg-accent flex items-center justify-center text-white font-black text-[10px] shadow-[0_0_15px_var(--accent-glow)]">4</div>
+                      <div className="w-8 h-8 rounded-full bg-accent flex items-center justify-center text-background font-black text-[10px] shadow-[0_0_15px_var(--accent-glow)]">4</div>
                       <h2 className="text-sm font-black tracking-tighter uppercase text-primary">Detalhes</h2>
                     </div>
+
 
                     <div className="relative group/input">
                       <Input
@@ -643,7 +649,7 @@ export default function Home() {
               >
                 <div className="flex flex-col gap-4 mb-8">
                   <h2 className="text-3xl font-black uppercase tracking-tighter">Seus Fragmentos</h2>
-                  <p className="text-[10px] font-black text-white/30 uppercase tracking-[0.4em]">Criações locais desta sessão</p>
+                  <p className="text-[10px] font-black text-white/70 uppercase tracking-[0.4em]">Criações locais desta sessão</p>
                 </div>
                 <Gallery
                   images={images}
@@ -685,7 +691,7 @@ export default function Home() {
             onClick={() => { setActiveTab("workstation"); play("click"); }}
             className={cn(
               "text-[9px] font-black uppercase tracking-[0.3em] transition-all flex items-center gap-2 px-6 py-2 rounded-full",
-              activeTab === "workstation" ? "text-primary bg-primary/10 shadow-[0_0_20px_rgba(16,185,129,0.2)]" : "text-white/20 hover:text-white"
+              activeTab === "workstation" ? "text-primary bg-primary/10 shadow-[0_0_20px_rgba(16,185,129,0.2)]" : "text-white/60 hover:text-white"
             )}
           >
             <Sparkles className="w-3 h-3" /> Workstation
@@ -694,7 +700,7 @@ export default function Home() {
             onClick={() => { setActiveTab("gallery"); play("click"); }}
             className={cn(
               "text-[9px] font-black uppercase tracking-[0.3em] transition-all flex items-center gap-2 px-6 py-2 rounded-full",
-              activeTab === "gallery" ? "text-secondary bg-secondary/10 shadow-[0_0_20px_rgba(245,158,11,0.2)]" : "text-white/20 hover:text-white"
+              activeTab === "gallery" ? "text-secondary bg-secondary/10 shadow-[0_0_20px_rgba(245,158,11,0.2)]" : "text-white/60 hover:text-white"
             )}
           >
             <RefreshCw className="w-3 h-3" /> Galeria
@@ -703,7 +709,7 @@ export default function Home() {
             onClick={() => { setActiveTab("mural"); play("click"); }}
             className={cn(
               "text-[9px] font-black uppercase tracking-[0.3em] transition-all flex items-center gap-2 px-6 py-2 rounded-full",
-              activeTab === "mural" ? "text-accent bg-accent/10 shadow-[0_0_20px_rgba(6,182,212,0.2)]" : "text-white/20 hover:text-white"
+              activeTab === "mural" ? "text-accent bg-accent/10 shadow-[0_0_20px_rgba(6,182,212,0.2)]" : "text-white/60 hover:text-white"
             )}
           >
             <Share2 className="w-3 h-3" /> Mural

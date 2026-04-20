@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
+import { SafeImage } from "./safe-image";
 
 interface CharacterSelectorProps {
   value: string;
@@ -68,11 +69,8 @@ export function CharacterSelector({ value, onChange, disabled }: CharacterSelect
           const colors = colorClasses[char.color];
           const isSelected = value === char.id;
           
-          // Prompt mais específico para garantir unicidade e qualidade
-          const safePrompt = `high quality anime face portrait of ${char.label} from ${char.anime}, cinematic lighting, vibrant colors`;
-          // Usando um seed baseado no ID do personagem para consistência e links individuais
           const charSeed = char.id.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
-          const photoUrl = `https://pollinations.ai/p/${encodeURIComponent(safePrompt)}?width=300&height=300&nologo=true&seed=${charSeed}`;
+          const photoUrl = `https://pollinations.ai/p/${encodeURIComponent(char.label + " anime portrait")}?width=200&height=200&nologo=true&seed=${charSeed}`;
 
           return (
             <button
@@ -88,14 +86,11 @@ export function CharacterSelector({ value, onChange, disabled }: CharacterSelect
               )}
             >
               <div className={cn("w-14 h-14 lg:w-16 lg:h-16 rounded-full overflow-hidden border-2 transition-transform duration-500 group-hover:scale-115 shrink-0 bg-black/60 shadow-lg", isSelected ? "border-white" : "border-white/20")}>
-                <img 
+                <SafeImage 
                   src={photoUrl} 
                   alt={char.label} 
-                  className="w-full h-full object-cover" 
-                  onError={(e) => {
-                    // Fallback para Iniciais em caso de falha de rede/filtro
-                    e.currentTarget.src = `https://ui-avatars.com/api/?name=${char.label}&background=1a1a1a&color=fff&size=150`;
-                  }}
+                  fallbackName={char.label}
+                  className="w-full h-full" 
                 />
               </div>
               <div className="text-center w-full">

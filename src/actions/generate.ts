@@ -90,6 +90,7 @@ export async function generateImage(
 ) {
   try {
     const characterBase = CHARACTERS[characterId] || "Anime character";
+    const styleBase = STYLES[styleId] || STYLES.flux;
     // Escolha do Modelo: Usa o fornecido ou decide pelo estilo
     const targetModel = model || (styleId === "realistic" ? POLLINATIONS_MODEL_FALLBACK : POLLINATIONS_MODEL_PRIMARY);
     

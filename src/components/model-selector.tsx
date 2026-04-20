@@ -3,6 +3,8 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 import { Palette, Box, Film, Camera, Zap, FileImage, Droplets, Ghost } from "lucide-react";
+import { ART_STYLES, CHARACTERS } from "@/lib/constants";
+import { LucideIcon } from "lucide-react";
 
 interface ModelSelectorProps {
   value: string;
@@ -10,22 +12,24 @@ interface ModelSelectorProps {
   disabled?: boolean;
 }
 
-export const ART_STYLES = [
-  { id: "flux", label: "Flux Original", description: "Melhor Qualidade", icon: Zap, color: "yellow" },
-  { id: "realistic", label: "Realista", description: "Live Action Style", icon: Camera, color: "blue" },
-  { id: "3d", label: "3D Render", description: "Pixar / Game Style", icon: Box, color: "pink" },
-  { id: "retro", label: "Retro 90s", description: "Nostalgia VHS", icon: Film, color: "pink" },
-  { id: "manga", label: "Mangá", description: "Preto e Branco", icon: FileImage, color: "slate" },
-  { id: "cyberpunk", label: "Cyberpunk", description: "Neon & Futuro", icon: Ghost, color: "cyan" },
-  { id: "watercolor", label: "Aquarela", description: "Suave e Artístico", icon: Droplets, color: "rose" },
-  { id: "dark", label: "Sombrio", description: "Dark Fantasy", icon: Palette, color: "red" },
-];
+const STYLE_ICONS: Record<string, LucideIcon> = {
+  flux: Zap,
+  realistic: Camera,
+  "3d": Box,
+  retro: Film,
+  manga: FileImage,
+  cyberpunk: Ghost,
+  watercolor: Droplets,
+  dark: Palette,
+};
+
+export { ART_STYLES, CHARACTERS };
 
 export function ModelSelector({ value, onChange, disabled }: ModelSelectorProps) {
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
       {ART_STYLES.map((style) => {
-        const Icon = style.icon;
+        const Icon = STYLE_ICONS[style.id] || Palette;
         const isSelected = value === style.id;
 
         return (

@@ -22,13 +22,14 @@
   --bg-surface: #1e1e1e;
   
   /* APCA Contraste Alvo: Lc 75 para primários, Lc 60 para secundários (Acessibilidade 100%) */
-  --text-primary: #e5e5e7;
-  --text-secondary: #c0c0c2;
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
   
-  --accent: #10b981;
-  --accent-glow: rgba(16, 185, 129, 0.4);
+  --accent: #34d399; /* Esmeralda 400 - Contraste superior a 9:1 */
+  --accent-glow: rgba(52, 211, 153, 0.4);
   
-  --border: rgba(255, 255, 255, 0.12); /* Bio-Visual: Borda semitransparente alpha */
+  --border: rgba(255, 255, 255, 0.15);
+
 
   /* [Scientific Change] Muted foreground for labels e textos técnicos */
   --muted-foreground: #a1a1aa; 

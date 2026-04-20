@@ -15,6 +15,8 @@ import { Gallery } from "@/components/gallery";
 import { useGallery } from "@/hooks/use-gallery";
 import { useSound } from "@/hooks/use-sound";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/lib/supabase";
+import { CommunityFeed } from "@/components/community-feed";
 
 const IMAGE_SIZES = [
   { id: "portrait", label: "Retrato (3:4)", width: 768, height: 1024, icon: "📱" },
@@ -169,6 +171,17 @@ export default function Home() {
       
       setGeneratedVideo(objectUrl);
       play("success");
+
+      // Salva no Mural (Silencioso)
+      if (supabase) {
+        supabase.from('community_feed').insert({
+          image_url: url, // Link direto e permanente do Pollinations
+          character_id: selectedCharacter,
+          style_id: selectedStyle,
+          prompt: finalPrompt,
+          is_video: true
+        }).then(() => console.log("[MURAL] Vídeo compartilhado"));
+      }
     } catch (err: any) {
       setError(err.message || "Algo deu errado na geração de vídeo");
       play("error");
@@ -623,6 +636,30 @@ export default function Home() {
               if (item?.prompt) setCurrentPrompt(item.prompt);
             }} />
           </div>
+
+          {/* Mural da Comunidade (Seção Pública Global) */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.2 }}
+            className="col-span-1 lg:col-span-12 mt-12 mb-20"
+          >
+            <div className="flex flex-col items-center gap-4 mb-12">
+              <div className="h-[2px] w-24 bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
+              <div className="space-y-2">
+                <h2 className="text-4xl md:text-6xl font-black text-center tracking-tighter bg-clip-text text-transparent bg-gradient-to-b from-white to-white/30">
+                  Mural das Lendas
+                </h2>
+                <div className="flex items-center justify-center gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  <p className="text-white/40 text-[10px] font-bold uppercase tracking-[0.3em]">Criações Globais da Comunidade Live</p>
+                </div>
+              </div>
+            </div>
+            
+            <CommunityFeed />
+          </motion.div>
 
         </div>
 

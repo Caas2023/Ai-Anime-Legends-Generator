@@ -326,30 +326,47 @@ export async function generateImage(
 
     console.log(`[GEN] ✅ OK: ${result.buffer.length} bytes`);
 
-    // 9. Salva no Supabase (opcional)
+    // 9. Salva no Supabase (Mural da Comunidade)
     if (supabase) {
       try {
+        // Tenta upload para storage primeiro
         const fileName = `${characterId}-${Date.now()}.jpg`;
         const { error: uploadError } = await supabase.storage
           .from("gallery")
           .upload(fileName, result.buffer, { contentType: "image/jpeg" });
 
+        let finalUrl = dataUrl;
+
         if (!uploadError) {
           const {
             data: { publicUrl },
           } = supabase.storage.from("gallery").getPublicUrl(fileName);
-          await supabase.from("generations").insert({
-            image_url: publicUrl,
-            character_id: characterId,
-            style_id: styleId,
-            prompt: finalPrompt,
-          });
-          return { success: true, imageUrl: publicUrl, prompt: finalPrompt };
+          finalUrl = publicUrl;
+        } else {
+          // Se falhou o storage, use o link direto do Pollinations (que é permanente)
+          // Geramos o link direto novamente para garantir que temos um URL e não apenas o buffer
+          const encoded = encodeURIComponent(finalPrompt);
+          finalUrl = `https://pollinations.ai/p/${encoded}?width=${width}&height=${height}&model=${targetModel}&seed=${Math.floor(Math.random()*1000)}`;
         }
-      } catch {
-        // Supabase falhou, continua com base64
+
+        // Salva na tabela do Mural Público
+        await supabase.from("community_feed").insert({
+          image_url: finalUrl,
+          character_id: characterId,
+          style_id: styleId,
+          prompt: finalPrompt,
+          is_video: false
+        });
+
+        if (!uploadError) {
+           return { success: true, imageUrl: finalUrl, prompt: finalPrompt };
+        }
+      } catch (err) {
+        console.warn("[SUPABASE FEED ERROR]", err);
       }
     }
+
+    return { success: true, imageUrl: dataUrl, prompt: finalPrompt };
 
     return { success: true, imageUrl: dataUrl, prompt: finalPrompt };
   } catch (error: any) {

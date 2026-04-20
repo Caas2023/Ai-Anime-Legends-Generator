@@ -258,7 +258,8 @@ export async function generateImage(
   customPrompt?: string,
   width: number = 768,
   height: number = 1024,
-  apiKey?: string
+  apiKey?: string,
+  imageModel?: string
 ) {
   try {
     const characterLabel = CHARACTERS[characterId] || characterId;
@@ -279,9 +280,10 @@ export async function generateImage(
 
     console.log(`[GEN] Prompt: ${finalPrompt.substring(0, 100)}...`);
 
-    // 3. Tenta modelo primário: flux
-    console.log("[GEN] >>> Tentando Pollinations (flux)...");
-    let result = await fetchFromPollinations(finalPrompt, width, height, POLLINATIONS_MODEL_PRIMARY, apiKey);
+    // 3. Tenta modelo escolhido ou primário
+    const targetModel = (apiKey && imageModel) ? imageModel : POLLINATIONS_MODEL_PRIMARY;
+    console.log(`[GEN] >>> Tentando Pollinations (${targetModel})...`);
+    let result = await fetchFromPollinations(finalPrompt, width, height, targetModel, apiKey);
 
     // 4. Retry com prompt simplificado no mesmo modelo
     if (!result) {

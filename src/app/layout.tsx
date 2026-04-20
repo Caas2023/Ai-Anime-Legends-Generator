@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Outfit } from "next/font/google";
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"] });
+const outfit = Outfit({ subsets: ["latin"], weight: ["300", "400", "500", "700", "900"] });
 
 export const metadata: Metadata = {
   title: "Ai Anime Legends Generator — Crie Arte com IA",
@@ -22,7 +22,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR" className="dark">
-      <body className={`${inter.className} min-h-screen bg-background text-foreground selection:bg-primary selection:text-primary-foreground`}>
+      <body className={`${outfit.className} min-h-screen bg-background text-foreground selection:bg-primary selection:text-primary-foreground`}>
         {children}
       </body>
     </html>

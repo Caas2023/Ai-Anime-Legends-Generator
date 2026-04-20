@@ -3,7 +3,7 @@
 import * as React from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { Wand2, Download, RefreshCw, Sparkles, AlertCircle, Instagram, Facebook, MessageCircle, Share2, Github, Copy, Check, Video, Play } from "lucide-react";
+import { Wand2, Download, RefreshCw, Sparkles, AlertCircle, Instagram, Facebook, MessageCircle, Share2, Github, Copy, Check, Video, Play, Settings, ChevronDown } from "lucide-react";
 
 import { CharacterSelector, CHARACTERS } from "@/components/character-selector";
 import { ModelSelector, ART_STYLES } from "@/components/model-selector";
@@ -38,6 +38,11 @@ export default function Home() {
   const [error, setError] = React.useState<string | null>(null);
   const [apiKey, setApiKey] = React.useState<string | null>(null);
   const [generatedVideo, setGeneratedVideo] = React.useState<string | null>(null);
+
+  // Model Selection (BYOP VIP)
+  const [showSettings, setShowSettings] = React.useState(false);
+  const [imageModel, setImageModel] = React.useState("flux");
+  const [videoModel, setVideoModel] = React.useState("ltx");
   const { play } = useSound();
   const { images, addImage, removeImage } = useGallery();
 
@@ -116,7 +121,7 @@ export default function Home() {
     setGeneratedVideo(null);
     setCurrentPrompt(null);
 
-    const result = await generateImage(selectedCharacter, selectedStyle, customPrompt, selectedSize.width, selectedSize.height, apiKey || undefined);
+    const result = await generateImage(selectedCharacter, selectedStyle, customPrompt, selectedSize.width, selectedSize.height, apiKey || undefined, apiKey ? imageModel : undefined);
 
     if (result.success && result.imageUrl) {
       setGeneratedImage(result.imageUrl);
@@ -148,7 +153,7 @@ export default function Home() {
       const encoded = encodeURIComponent(truncated);
       const seed = Math.floor(Math.random() * 999999);
       
-      const url = `https://gen.pollinations.ai/video/${encoded}?seed=${seed}`;
+      const url = `https://gen.pollinations.ai/video/${encoded}?seed=${seed}&model=${videoModel}`;
       
       const response = await fetch(url, {
         method: "GET",
@@ -219,13 +224,17 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 via-[#0a0a0a] to-black text-white relative overflow-hidden font-sans">
-
-      {/* Background Effects */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] rounded-full bg-primary/10 blur-[120px]" />
-        <div className="absolute top-[20%] -right-[10%] w-[40%] h-[40%] rounded-full bg-cyan-600/10 blur-[120px]" />
-        <div className="absolute bottom-0 left-[20%] w-[60%] h-[30%] rounded-full bg-emerald-600/10 blur-[100px]" />
+    <main className="min-h-screen bg-[#050505] text-white selection:bg-primary/30 relative overflow-hidden font-sans pb-16">
+      
+      {/* Background Animado Dinâmico (Orbes UI) */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+        {/* Mesh Background */}
+        <div className="absolute inset-0 opacity-[0.02] mix-blend-overlay" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.65%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E")' }} />
+        
+        {/* Orbes Animados com Framer/Tailwind */}
+        <div className="absolute -top-[10%] -left-[10%] w-[45%] h-[45%] rounded-full bg-purple-600/20 blur-[150px] animate-pulse mix-blend-screen" style={{ animationDuration: '7s' }} />
+        <div className="absolute top-[20%] -right-[10%] w-[50%] h-[50%] rounded-full bg-cyan-600/15 blur-[160px] animate-pulse mix-blend-screen" style={{ animationDuration: '10s', animationDelay: '2s' }} />
+        <div className="absolute bottom-[-10%] left-[20%] w-[60%] h-[40%] rounded-full bg-emerald-600/10 blur-[140px] animate-pulse mix-blend-screen" style={{ animationDuration: '8s', animationDelay: '1s' }} />
       </div>
 
       <div className="container max-w-6xl mx-auto px-4 py-8 relative z-10">
@@ -267,31 +276,33 @@ export default function Home() {
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-start">
-
-          {/* Controls Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start w-full">
+          
+          {/* Lendas Sidebar (Esquerda) */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
+            className="lg:col-span-2 flex flex-col lg:sticky lg:top-8"
+          >
+            <div className="flex items-center space-x-3 mb-6">
+              <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-primary to-cyan-600 text-white text-sm font-bold shadow-lg shadow-primary/25">1</div>
+              <h2 className="text-xl font-bold tracking-tight">O Herói</h2>
+            </div>
+            {/* O Componente agora é vertical no PC */}
+            <CharacterSelector
+              value={selectedCharacter}
+              onChange={(val) => { setSelectedCharacter(val); play("click"); }}
+              disabled={isGenerating || isGeneratingVideo}
+            />
+          </motion.div>
+
+          {/* Controls Section (Meio) */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
             className="lg:col-span-5 space-y-6 md:space-y-10"
           >
-            {/* Character Selection */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-primary to-cyan-600 text-white text-sm font-bold shadow-lg shadow-primary/25">1</div>
-                  <h2 className="text-xl font-bold tracking-tight">Escolha a Lenda</h2>
-                </div>
-                <span className="text-xs font-medium text-white/40 uppercase tracking-widest">Pc / Mobile</span>
-              </div>
-              <CharacterSelector
-                value={selectedCharacter}
-                onChange={(val) => { setSelectedCharacter(val); play("click"); }}
-                disabled={isGenerating}
-              />
-            </div>
-
             {/* Model/Style Selection */}
             <div className="space-y-4">
               <div className="flex items-center space-x-3">
@@ -333,7 +344,7 @@ export default function Home() {
             {/* Custom Prompt Context */}
             <div className="space-y-4">
               <div className="flex items-center space-x-3">
-                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500 to-cyan-600 text-white text-sm font-bold shadow-lg shadow-emerald-500/25">4</div>
+                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500 to-cyan-600 text-white text-sm font-bold shadow-lg shadow-emerald-500/25">3</div>
                 <h2 className="text-xl font-bold tracking-tight">Detalhes Extras</h2>
               </div>
               <div className="relative group">
@@ -436,12 +447,12 @@ export default function Home() {
             </div>
           </motion.div>
 
-          {/* Result Section */}
+          {/* Result Section (Direita) */}
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.4 }}
-            className="lg:col-span-7 flex flex-col items-center"
+            className="lg:col-span-5 flex flex-col items-center lg:sticky lg:top-8"
           >
             <Card className="w-full aspect-[3/4] md:aspect-[4/5] bg-black/40 border-white/10 backdrop-blur-xl relative overflow-hidden rounded-3xl shadow-2xl group ring-1 ring-white/5">
 

@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
-import { Swords, Sparkles, Zap, Moon, Skull, Crown, Flame, Star, Ghost, Heart, Shield, Eye, Target, Cloud, Sun, Droplets, Wind, Hexagon, Circle } from "lucide-react";
 
 interface CharacterSelectorProps {
   value: string;
@@ -12,64 +11,64 @@ interface CharacterSelectorProps {
 
 export const CHARACTERS = [
   // Dragon Ball
-  { id: "goku", label: "Goku", anime: "Dragon Ball", icon: Flame, color: "orange" },
-  { id: "vegeta", label: "Vegeta", anime: "Dragon Ball", icon: Crown, color: "blue" },
-  { id: "gohan", label: "Gohan", anime: "Dragon Ball", icon: Zap, color: "purple" },
-  { id: "broly", label: "Broly", anime: "Dragon Ball", icon: Shield, color: "green" },
-  { id: "frieza", label: "Frieza", anime: "Dragon Ball", icon: Hexagon, color: "purple" },
+  { id: "goku", label: "Goku", anime: "Dragon Ball", color: "orange" },
+  { id: "vegeta", label: "Vegeta", anime: "Dragon Ball", color: "blue" },
+  { id: "gohan", label: "Gohan", anime: "Dragon Ball", color: "purple" },
+  { id: "broly", label: "Broly", anime: "Dragon Ball", color: "green" },
+  { id: "frieza", label: "Frieza", anime: "Dragon Ball", color: "purple" },
 
   // Naruto
-  { id: "naruto", label: "Naruto", anime: "Naruto", icon: Star, color: "yellow" },
-  { id: "sasuke", label: "Sasuke", anime: "Naruto", icon: Eye, color: "indigo" },
-  { id: "kakashi", label: "Kakashi", anime: "Naruto", icon: Target, color: "slate" },
-  { id: "itachi", label: "Itachi", anime: "Naruto", icon: Cloud, color: "red" },
-  { id: "sakura", label: "Sakura", anime: "Naruto", icon: Heart, color: "pink" },
-  { id: "hinata", label: "Hinata", anime: "Naruto", icon: Eye, color: "indigo" },
-  { id: "jiraiya", label: "Jiraiya", anime: "Naruto", icon: Sun, color: "orange" },
+  { id: "naruto", label: "Naruto", anime: "Naruto", color: "yellow" },
+  { id: "sasuke", label: "Sasuke", anime: "Naruto", color: "indigo" },
+  { id: "kakashi", label: "Kakashi", anime: "Naruto", color: "slate" },
+  { id: "itachi", label: "Itachi", anime: "Naruto", color: "red" },
+  { id: "sakura", label: "Sakura", anime: "Naruto", color: "pink" },
+  { id: "hinata", label: "Hinata", anime: "Naruto", color: "indigo" },
+  { id: "jiraiya", label: "Jiraiya", anime: "Naruto", color: "orange" },
 
   // One Piece
-  { id: "luffy", label: "Luffy", anime: "One Piece", icon: Skull, color: "red" },
-  { id: "zoro", label: "Zoro", anime: "One Piece", icon: Swords, color: "green" },
-  { id: "sanji", label: "Sanji", anime: "One Piece", icon: Flame, color: "yellow" },
-  { id: "nami", label: "Nami", anime: "One Piece", icon: Circle, color: "orange" },
-  { id: "shanks", label: "Shanks", anime: "One Piece", icon: Swords, color: "red" },
-  { id: "law", label: "Law", anime: "One Piece", icon: Heart, color: "yellow" },
-  { id: "ace", label: "Ace", anime: "One Piece", icon: Flame, color: "orange" },
+  { id: "luffy", label: "Luffy", anime: "One Piece", color: "red" },
+  { id: "zoro", label: "Zoro", anime: "One Piece", color: "green" },
+  { id: "sanji", label: "Sanji", anime: "One Piece", color: "yellow" },
+  { id: "nami", label: "Nami", anime: "One Piece", color: "orange" },
+  { id: "shanks", label: "Shanks", anime: "One Piece", color: "red" },
+  { id: "law", label: "Law", anime: "One Piece", color: "yellow" },
+  { id: "ace", label: "Ace", anime: "One Piece", color: "orange" },
 
   // Demon Slayer
-  { id: "nezuko", label: "Nezuko", anime: "Demon Slayer", icon: Heart, color: "rose" },
-  { id: "tanjiro", label: "Tanjiro", anime: "Demon Slayer", icon: Droplets, color: "cyan" },
-  { id: "zenitsu", label: "Zenitsu", anime: "Demon Slayer", icon: Zap, color: "yellow" },
-  { id: "inosuke", label: "Inosuke", anime: "Demon Slayer", icon: Swords, color: "blue" },
-  { id: "rengoku", label: "Rengoku", anime: "Demon Slayer", icon: Flame, color: "orange" },
-  { id: "shinobu", label: "Shinobu", anime: "Demon Slayer", icon: Moon, color: "purple" },
+  { id: "nezuko", label: "Nezuko", anime: "Demon Slayer", color: "rose" },
+  { id: "tanjiro", label: "Tanjiro", anime: "Demon Slayer", color: "cyan" },
+  { id: "zenitsu", label: "Zenitsu", anime: "Demon Slayer", color: "yellow" },
+  { id: "inosuke", label: "Inosuke", anime: "Demon Slayer", color: "blue" },
+  { id: "rengoku", label: "Rengoku", anime: "Demon Slayer", color: "orange" },
+  { id: "shinobu", label: "Shinobu", anime: "Demon Slayer", color: "purple" },
 
   // Jujutsu Kaisen
-  { id: "gojo", label: "Gojo", anime: "Jujutsu Kaisen", icon: Eye, color: "cyan" },
-  { id: "yuji", label: "Yuji", anime: "Jujutsu Kaisen", icon: Shield, color: "rose" },
-  { id: "megumi", label: "Megumi", anime: "Jujutsu Kaisen", icon: Ghost, color: "slate" },
-  { id: "nobara", label: "Nobara", anime: "Jujutsu Kaisen", icon: Heart, color: "orange" },
-  { id: "sukuna", label: "Sukuna", anime: "Jujutsu Kaisen", icon: Skull, color: "red" },
+  { id: "gojo", label: "Gojo", anime: "Jujutsu Kaisen", color: "cyan" },
+  { id: "yuji", label: "Yuji", anime: "Jujutsu Kaisen", color: "rose" },
+  { id: "megumi", label: "Megumi", anime: "Jujutsu Kaisen", color: "slate" },
+  { id: "nobara", label: "Nobara", anime: "Jujutsu Kaisen", color: "orange" },
+  { id: "sukuna", label: "Sukuna", anime: "Jujutsu Kaisen", color: "red" },
 
   // Chainsaw Man
-  { id: "makima", label: "Makima", anime: "Chainsaw Man", icon: Eye, color: "red" },
-  { id: "denji", label: "Denji", anime: "Chainsaw Man", icon: Swords, color: "orange" },
-  { id: "power", label: "Power", anime: "Chainsaw Man", icon: Crown, color: "rose" },
+  { id: "makima", label: "Makima", anime: "Chainsaw Man", color: "red" },
+  { id: "denji", label: "Denji", anime: "Chainsaw Man", color: "orange" },
+  { id: "power", label: "Power", anime: "Chainsaw Man", color: "rose" },
 
   // Attack on Titan
-  { id: "eren", label: "Eren", anime: "Attack on Titan", icon: Target, color: "green" },
-  { id: "mikasa", label: "Mikasa", anime: "Attack on Titan", icon: Swords, color: "red" },
-  { id: "levi", label: "Levi", anime: "Attack on Titan", icon: Wind, color: "green" },
+  { id: "eren", label: "Eren", anime: "Attack on Titan", color: "green" },
+  { id: "mikasa", label: "Mikasa", anime: "Attack on Titan", color: "red" },
+  { id: "levi", label: "Levi", anime: "Attack on Titan", color: "green" },
 
   // Others
-  { id: "saitama", label: "Saitama", anime: "One Punch Man", icon: Shield, color: "yellow" },
-  { id: "deku", label: "Deku", anime: "My Hero", icon: Zap, color: "green" },
-  { id: "elric", label: "Edward", anime: "FMA", icon: Hexagon, color: "red" },
-  { id: "light", label: "Light", anime: "Death Note", icon: Moon, color: "slate" },
-  { id: "killua", label: "Killua", anime: "HxH", icon: Zap, color: "purple" },
-  { id: "gon", label: "Gon", anime: "HxH", icon: Shield, color: "green" },
-  { id: "sailormoon", label: "Sailor Moon", anime: "Sailor Moon", icon: Moon, color: "pink" },
-  { id: "ichigo", label: "Ichigo", anime: "Bleach", icon: Swords, color: "slate" },
+  { id: "saitama", label: "Saitama", anime: "One Punch Man", color: "yellow" },
+  { id: "deku", label: "Deku", anime: "My Hero", color: "green" },
+  { id: "elric", label: "Edward", anime: "FMA", color: "red" },
+  { id: "light", label: "Light", anime: "Death Note", color: "slate" },
+  { id: "killua", label: "Killua", anime: "HxH", color: "purple" },
+  { id: "gon", label: "Gon", anime: "HxH", color: "green" },
+  { id: "sailormoon", label: "Sailor Moon", anime: "Sailor Moon", color: "pink" },
+  { id: "ichigo", label: "Ichigo", anime: "Bleach", color: "slate" },
 ];
 
 const colorClasses: Record<string, { active: string; hover: string; icon: string }> = {
@@ -122,12 +121,14 @@ export function CharacterSelector({ value, onChange, disabled }: CharacterSelect
       {/* Container de Scroll */}
       <div
         ref={scrollContainerRef}
-        className="flex overflow-x-auto gap-3 pb-4 snap-x snap-mandatory scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent px-1"
+        className="flex overflow-x-auto lg:flex-col lg:overflow-y-auto lg:h-[700px] lg:overflow-x-hidden gap-3 pb-4 lg:pb-0 lg:pr-2 snap-x snap-mandatory lg:snap-y scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent px-1"
       >
         {CHARACTERS.map((char) => {
-          const Icon = char.icon;
           const colors = colorClasses[char.color];
           const isSelected = value === char.id;
+          
+          // Geração de foto em tempo real usando bypass nologo
+          const photoUrl = `https://image.pollinations.ai/prompt/face%20portrait%20of%20${encodeURIComponent(char.label)}%20anime%20icon?width=120&height=120&nologo=true`;
 
           return (
             <button
@@ -135,15 +136,15 @@ export function CharacterSelector({ value, onChange, disabled }: CharacterSelect
               onClick={() => onChange(char.id)}
               disabled={disabled}
               className={cn(
-                "flex-none w-[110px] md:w-[130px] snap-center flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-all duration-300 gap-2 relative overflow-hidden group",
+                "flex-none w-[90px] h-[120px] lg:w-full lg:h-[130px] snap-center flex flex-col items-center justify-center p-2 rounded-xl border-2 transition-all duration-300 gap-2 relative overflow-hidden group",
                 isSelected
-                  ? `${colors.active} shadow-[0_0_15px_rgba(0,0,0,0.5)] scale-105 z-10`
+                  ? `${colors.active} shadow-[0_0_15px_rgba(0,0,0,0.5)] scale-105 z-10 lg:scale-[1.02]`
                   : `border-white/5 bg-card/30 hover:bg-card/60 text-muted-foreground ${colors.hover}`,
                 disabled && "opacity-50 cursor-not-allowed"
               )}
             >
-              <div className={cn("p-2.5 rounded-full bg-black/40 backdrop-blur-sm transition-transform group-hover:scale-110", isSelected ? colors.icon : "text-muted-foreground group-hover:text-white")}>
-                <Icon className="w-6 h-6 md:w-7 md:h-7" />
+              <div className={cn("w-12 h-12 lg:w-14 lg:h-14 rounded-full overflow-hidden border-2 transition-transform group-hover:scale-110", isSelected ? "border-white" : "border-white/20")}>
+                <img src={photoUrl} alt={char.label} loading="lazy" className="w-full h-full object-cover" />
               </div>
               <div className="text-center w-full">
                 <span className="text-xs md:text-sm font-bold block truncate w-full px-1">{char.label}</span>

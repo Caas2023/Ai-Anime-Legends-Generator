@@ -29,6 +29,12 @@ export function useGallery() {
     }, []);
 
     const addImage = (url: string, character: string, style: string, prompt: string) => {
+        // PROTEÇÃO: Não salvar Base64 no LocalStorage para não estourar o limite de 5MB
+        if (url.startsWith("data:image")) {
+            console.warn("[GALLERY] Ignorando salvamento de Base64 para proteger o LocalStorage.");
+            return;
+        }
+
         const newItem: GalleryItem = {
             id: crypto.randomUUID(),
             url,

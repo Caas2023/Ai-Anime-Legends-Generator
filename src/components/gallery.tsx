@@ -48,12 +48,10 @@ export function Gallery({ images, onRemove, onSelect }: GalleryProps) {
                                 className="relative group w-[150px] aspect-[3/4] rounded-xl overflow-hidden bg-black/50 border border-white/10 shrink-0 cursor-pointer"
                                 onClick={() => onSelect && onSelect(img.url)}
                             >
-                                <Image
+                                <img
                                     src={img.url}
                                     alt="Gallery Item"
-                                    fill
-                                    sizes="(max-width: 768px) 150px, 200px"
-                                    className="object-cover transition-transform duration-300 group-hover:scale-110"
+                                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
                                 />
 
                                 {/* Overlay */}

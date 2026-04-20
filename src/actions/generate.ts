@@ -117,8 +117,6 @@ export async function generateImage(
     if (!response.ok) throw new Error(`Pollinations API error: ${response.status}`);
 
     const buffer = await response.arrayBuffer();
-    const dataUrl = `data:image/webp;base64,${Buffer.from(buffer).toString("base64")}`;
-
     // Tentar salvar no Supabase (Storage + Table) se estiver configurado
     if (supabase) {
       try {
@@ -139,15 +137,14 @@ export async function generateImage(
           } = supabase.storage.from("gallery").getPublicUrl(fileName);
           finalUrl = publicUrl;
         } else {
-          // Fallback persistente caso o Storage falhe (Bucket não existe ou s/ permissão)
-          // Usamos um prompt mais descritivo e nologo para o mural
-          const safeSlug = encodeURIComponent(`${characterId} anime legendary character`);
+          // Fallback persistente caso o Storage falhe
+          // Usamos um link curto do Pollinations para não quebrar o localStorage do usuário
+          const safeSlug = encodeURIComponent(`${characterId} anime style ${styleId}`);
           finalUrl = `https://pollinations.ai/p/${safeSlug}?width=${width}&height=${height}&model=${targetModel}&seed=${Math.floor(Math.random()*1000000)}&nologo=true`;
           console.warn("[MURAL] Storage offline. Usando link de fallback Pollinations.");
         }
 
         // 2. Salvar na Tabela community_feed
-        console.log(`[MURAL] Salvando lenda: ${characterId} no Mural Público...`);
         const { error: feedError } = await supabase.from("community_feed").insert({
           image_url: finalUrl,
           character_id: characterId,
@@ -158,15 +155,15 @@ export async function generateImage(
 
         if (feedError) console.error("[MURAL ERROR] Falha no insert:", feedError.message);
         
-        if (!uploadError) {
-           return { success: true, imageUrl: finalUrl, prompt: finalPrompt };
-        }
+        // Retornamos a URL final (Supabase ou Pollinations Fallback)
+        return { success: true, imageUrl: finalUrl, prompt: finalPrompt };
       } catch (err: any) {
         console.warn("[SUPABASE ERROR] Falha na persistência:", err.message);
       }
     }
 
-    return { success: true, imageUrl: dataUrl, prompt: finalPrompt };
+    // Se nem o Supabase estiver configurado, retorna o link do Pollinations direto
+    return { success: true, imageUrl: pollinationsUrl, prompt: finalPrompt };
 
   } catch (error: any) {
     console.error("[GENERATE ERROR]", error);

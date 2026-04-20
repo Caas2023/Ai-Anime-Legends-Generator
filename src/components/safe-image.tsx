@@ -37,10 +37,19 @@ export function SafeImage({ src, alt, className, fallbackName, onLoad }: SafeIma
           <img 
             src={fallbackUrl} 
             alt="Fallback" 
-            className="w-full h-full object-cover opacity-40 grayscale" 
+            className="w-full h-full object-cover opacity-20 grayscale" 
           />
-          <div className="absolute inset-0 flex items-center justify-center">
-            <AlertCircle className="w-5 h-5 text-white/20" />
+          <div className="absolute inset-0 flex flex-col items-center justify-center p-4">
+            <AlertCircle className="w-5 h-5 text-red-500/50 mb-2" />
+            <p className="text-[9px] text-white/30 uppercase font-bold tracking-tight">
+              Imagem Não Carregou
+            </p>
+            <button 
+                onClick={() => { setError(false); setLoading(true); }}
+                className="mt-2 text-[8px] text-primary/50 hover:text-primary transition-colors uppercase font-bold"
+            >
+                Tentar Recarregar
+            </button>
           </div>
         </div>
       ) : (

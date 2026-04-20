@@ -138,10 +138,10 @@ export async function generateImage(
           finalUrl = publicUrl;
         } else {
           // Fallback persistente caso o Storage falhe
-          // Usamos um link curto do Pollinations para não quebrar o localStorage do usuário
-          const safeSlug = encodeURIComponent(`${characterId} anime style ${styleId}`);
-          finalUrl = `https://pollinations.ai/p/${safeSlug}?width=${width}&height=${height}&model=${targetModel}&seed=${Math.floor(Math.random()*1000000)}&nologo=true`;
-          console.warn("[MURAL] Storage offline. Usando link de fallback Pollinations.");
+          // Usamos o modelo 'turbo' que é mais leve e rápido para fallbacks
+          const safeSlug = encodeURIComponent(`${characterId} anime art`);
+          finalUrl = `https://pollinations.ai/p/${safeSlug}?width=${width}&height=${height}&model=${POLLINATIONS_MODEL_FALLBACK}&seed=${Math.floor(Math.random()*1000000)}&nologo=true`;
+          console.warn("[MURAL] Storage offline. Usando link de fallback Pollinations Turbo.");
         }
 
         // 2. Salvar na Tabela community_feed

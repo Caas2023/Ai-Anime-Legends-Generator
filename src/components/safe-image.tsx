@@ -57,14 +57,15 @@ export function SafeImage({ src, alt, className, fallbackName, onLoad }: SafeIma
           src={src}
           alt={alt}
           className={cn(
-            "w-full h-full object-cover transition-all duration-700",
-            loading ? "opacity-0 scale-110" : "opacity-100 scale-100"
+            "w-full h-full object-cover transition-opacity duration-300",
+            error ? "opacity-0" : "opacity-100"
           )}
           onLoad={() => {
             setLoading(false);
             onLoad?.();
           }}
-          onError={() => {
+          onError={(e) => {
+            console.error(`[IMAGE_FAIL] Falha ao carregar: ${src}`);
             setError(true);
             setLoading(false);
           }}

@@ -491,13 +491,10 @@ export default function Home() {
                         className="object-cover w-full h-full rounded-2xl shadow-inner bg-black"
                       />
                     ) : (
-                      <Image
+                      <img
                         src={generatedImage!}
                         alt="Arte Gerada"
-                        fill
-                        sizes="(max-width: 768px) 100vw, 50vw"
-                        className="object-cover rounded-2xl shadow-inner"
-                        priority
+                        className="w-full h-full object-cover rounded-2xl shadow-inner"
                       />
                     )}
                   </motion.div>

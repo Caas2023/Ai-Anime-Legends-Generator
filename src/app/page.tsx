@@ -149,7 +149,7 @@ export default function Home() {
     play("click");
 
     try {
-      const finalPrompt = await composePrompt(selectedCharacter, selectedStyle, customPrompt, apiKey);
+      const finalPrompt = await composePrompt(selectedCharacter, selectedStyle, customPrompt);
       setCurrentPrompt(finalPrompt);
 
       const truncated = finalPrompt.substring(0, 500);

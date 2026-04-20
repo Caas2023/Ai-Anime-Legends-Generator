@@ -35,6 +35,14 @@
   /* [Scientific Change] Muted foreground for labels e textos técnicos */
   --muted-foreground: #a1a1aa; 
 
+  /* [A11y Change] Support for @prefers-contrast */
+  @media (prefers-contrast: more) {
+    --text-primary: #ffffff;
+    --text-secondary: #f1f5f9;
+    --accent: #10b981;
+    --border: rgba(255, 255, 255, 0.4);
+    --bg-surface: #000000;
+  }
 }
 
 @theme {

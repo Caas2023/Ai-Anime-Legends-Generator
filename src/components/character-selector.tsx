@@ -127,9 +127,11 @@ export function CharacterSelector({ value, onChange, disabled }: CharacterSelect
           const colors = colorClasses[char.color];
           const isSelected = value === char.id;
           
-          // Prompt simplificado e seguro para evitar bloqueios de NSFW/Violence na API
-          const safePrompt = `cute face anime icon of ${char.label} smiling`;
-          const photoUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(safePrompt)}?width=120&height=120&nologo=true&seed=42`;
+          // Prompt mais específico para garantir unicidade e qualidade
+          const safePrompt = `high quality anime face portrait of ${char.label} from ${char.anime}, cinematic lighting, vibrant colors`;
+          // Usando um seed baseado no ID do personagem para consistência e links individuais
+          const charSeed = char.id.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
+          const photoUrl = `https://pollinations.ai/p/${encodeURIComponent(safePrompt)}?width=300&height=300&nologo=true&seed=${charSeed}`;
 
           return (
             <button
@@ -137,22 +139,21 @@ export function CharacterSelector({ value, onChange, disabled }: CharacterSelect
               onClick={() => onChange(char.id)}
               disabled={disabled}
               className={cn(
-                "flex-none w-[90px] h-[120px] lg:w-full lg:h-[130px] snap-center flex flex-col items-center justify-center p-2 rounded-xl border-2 transition-all duration-300 gap-2 relative overflow-hidden group",
+                "flex-none w-[100px] h-[130px] lg:w-full lg:h-[150px] snap-center flex flex-col items-center justify-center p-2 rounded-2xl border-2 transition-all duration-300 gap-2 relative overflow-hidden group",
                 isSelected
-                  ? `${colors.active} shadow-[0_0_15px_rgba(0,0,0,0.5)] scale-105 z-10 lg:scale-[1.02]`
-                  : `border-white/5 bg-card/30 hover:bg-card/60 text-muted-foreground ${colors.hover}`,
+                  ? `${colors.active} shadow-[0_0_20px_rgba(168,85,247,0.4)] scale-105 z-10 lg:scale-[1.03]`
+                  : `border-white/5 bg-white/5 hover:bg-white/10 text-muted-foreground ${colors.hover}`,
                 disabled && "opacity-50 cursor-not-allowed"
               )}
             >
-              <div className={cn("w-12 h-12 lg:w-14 lg:h-14 rounded-full overflow-hidden border-2 transition-transform group-hover:scale-110 shrink-0 bg-black/40", isSelected ? "border-white" : "border-white/20")}>
+              <div className={cn("w-14 h-14 lg:w-16 lg:h-16 rounded-full overflow-hidden border-2 transition-transform duration-500 group-hover:scale-115 shrink-0 bg-black/60 shadow-lg", isSelected ? "border-white" : "border-white/20")}>
                 <img 
                   src={photoUrl} 
                   alt={char.label} 
-                  loading="lazy" 
                   className="w-full h-full object-cover" 
                   onError={(e) => {
-                    // Fallback para as iniciais caso bloqueie no Rate Limit / NSFW
-                    e.currentTarget.src = `https://ui-avatars.com/api/?name=${char.label}&background=1a1a1a&color=fff&size=120`;
+                    // Fallback para Iniciais em caso de falha de rede/filtro
+                    e.currentTarget.src = `https://ui-avatars.com/api/?name=${char.label}&background=1a1a1a&color=fff&size=150`;
                   }}
                 />
               </div>

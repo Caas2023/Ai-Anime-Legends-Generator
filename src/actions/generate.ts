@@ -96,12 +96,11 @@ export async function generateImage(
     
     // Composição do Prompt Final
     const finalPrompt = `${characterBase}, in a unique epic random scene: ${extraPrompt}, ${styleBase}, intricate background, masterpiece, trending on pixiv`;
-    
-    // Link básico do Pollinations
+     // Link direto e real de imagem do Pollinations
     const encodedPrompt = encodeURIComponent(finalPrompt.substring(0, MAX_PROMPT_LENGTH));
-    const pollinationsUrl = `https://pollinations.ai/p/${encodedPrompt}?width=${width}&height=${height}&model=${targetModel}&seed=${Math.floor(Math.random() * 1000000)}&nologo=true`;
+    const pollinationsUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=${width}&height=${height}&model=${targetModel}&seed=${Math.floor(Math.random() * 1000000)}&nologo=true`;
 
-    console.log(`[GENERATING] ${characterId} with style ${styleId}... SDK usage simulation.`);
+    console.log(`[GENERATING] ${characterId} via image.pollinations.ai...`);
 
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
@@ -116,18 +115,25 @@ export async function generateImage(
 
     if (!response.ok) throw new Error(`Pollinations API error: ${response.status}`);
 
+    // VALIDAÇÃO CRÍTICA: Garantir que não seja HTML (redirecionamento ou erro do Pollinations)
+    const contentType = response.headers.get("content-type");
+    if (contentType && contentType.includes("text/html")) {
+        throw new Error("Pollinations retornou HTML em vez de imagem. Tente novamente em instantes.");
+    }
+
     const buffer = await response.arrayBuffer();
+
     // Tentar salvar no Supabase (Storage + Table) se estiver configurado
     if (supabase) {
       try {
-        const fileName = `${Date.now()}-${characterId}.webp`;
+        const fileName = `${Date.now()}-${characterId}.jpg`;
         let finalUrl = pollinationsUrl;
 
         // 1. Tentar upload para o Storage Bucket 'gallery'
         const { error: uploadError } = await supabase.storage
           .from("gallery")
           .upload(fileName, buffer, {
-            contentType: "image/webp",
+            contentType: "image/jpeg",
             cacheControl: "3600",
           });
 
@@ -138,9 +144,8 @@ export async function generateImage(
           finalUrl = publicUrl;
         } else {
           // Fallback persistente caso o Storage falhe
-          // Usamos o modelo 'turbo' que é mais leve e rápido para fallbacks
           const safeSlug = encodeURIComponent(`${characterId} anime art`);
-          finalUrl = `https://pollinations.ai/p/${safeSlug}?width=${width}&height=${height}&model=${POLLINATIONS_MODEL_FALLBACK}&seed=${Math.floor(Math.random()*1000000)}&nologo=true`;
+          finalUrl = `https://image.pollinations.ai/prompt/${safeSlug}?width=${width}&height=${height}&model=${POLLINATIONS_MODEL_FALLBACK}&seed=${Math.floor(Math.random()*1000000)}&nologo=true`;
           console.warn("[MURAL] Storage offline. Usando link de fallback Pollinations Turbo.");
         }
 

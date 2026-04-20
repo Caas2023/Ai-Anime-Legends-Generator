@@ -38,8 +38,9 @@ export function Gallery({ images, onRemove, onSelect }: GalleryProps) {
                             {/* Base Image */}
                             <img
                                 src={img.url}
-                                alt="Memory Fragment"
+                                alt={img.prompt || "Fragmento de Memória da Lenda"}
                                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                decoding="async"
                             />
 
                             {/* Aura Overlay */}
@@ -54,8 +55,9 @@ export function Gallery({ images, onRemove, onSelect }: GalleryProps) {
                                             link.click();
                                         }}
                                         className="w-10 h-10 rounded-full glass-panel flex items-center justify-center hover:bg-white text-white hover:text-black transition-all"
+                                        aria-label="Baixar esta criação"
                                     >
-                                        <Download className="w-4 h-4" />
+                                        <Download className="w-4 h-4" aria-hidden="true" />
                                     </button>
                                     
                                     {img.prompt && (
@@ -65,8 +67,9 @@ export function Gallery({ images, onRemove, onSelect }: GalleryProps) {
                                                 navigator.clipboard.writeText(img.prompt);
                                             }}
                                             className="w-10 h-10 rounded-full glass-panel flex items-center justify-center hover:bg-secondary text-white hover:text-black transition-all"
+                                            aria-label="Copiar prompt desta lenda"
                                         >
-                                            <Copy className="w-4 h-4" />
+                                            <Copy className="w-4 h-4" aria-hidden="true" />
                                         </button>
                                     )}
 
@@ -76,8 +79,9 @@ export function Gallery({ images, onRemove, onSelect }: GalleryProps) {
                                             onRemove(img.id);
                                         }}
                                         className="w-10 h-10 rounded-full glass-panel flex items-center justify-center hover:bg-red-500 text-white transition-all"
+                                        aria-label="Excluir criação da galeria local"
                                     >
-                                        <Trash2 className="w-4 h-4" />
+                                        <Trash2 className="w-4 h-4" aria-hidden="true" />
                                     </button>
                                 </div>
                             </div>

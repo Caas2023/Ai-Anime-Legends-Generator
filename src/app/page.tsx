@@ -260,7 +260,11 @@ export default function Home() {
   };
 
   return (
-    <main className="h-screen bg-background text-foreground selection:bg-primary/30 relative overflow-hidden font-sans">
+    <main 
+      id="main-content" 
+      tabIndex={-1} 
+      className="h-screen bg-background text-foreground selection:bg-primary/30 relative overflow-hidden font-sans focus:outline-none"
+    >
 
       
       {/* Notificação de Erro (Alerta Místico) */}

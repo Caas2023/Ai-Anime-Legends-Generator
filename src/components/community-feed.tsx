@@ -127,8 +127,9 @@ export function CommunityFeed() {
                     <button 
                       className="w-8 h-8 rounded-full glass-panel flex items-center justify-center hover:bg-white text-white hover:text-black transition-all"
                       onClick={() => window.open(item.image_url, '_blank')}
+                      aria-label="Visualizar lenda em tamanho real"
                     >
-                      <Eye className="w-3.5 h-3.5" />
+                      <Eye className="w-3.5 h-3.5" aria-hidden="true" />
                     </button>
                     <button 
                       className="w-8 h-8 rounded-full glass-panel flex items-center justify-center hover:bg-white text-white hover:text-black transition-all"
@@ -136,8 +137,9 @@ export function CommunityFeed() {
                         e.stopPropagation();
                         navigator.clipboard.writeText(item.prompt);
                       }}
+                      aria-label="Copiar prompt da lenda"
                     >
-                      <Copy className="w-3.5 h-3.5" />
+                      <Copy className="w-3.5 h-3.5" aria-hidden="true" />
                     </button>
                     <button 
                       className="w-8 h-8 rounded-full glass-panel flex items-center justify-center hover:bg-white text-white hover:text-black transition-all"
@@ -147,8 +149,9 @@ export function CommunityFeed() {
                         link.download = `legend-${item.id}.jpg`;
                         link.click();
                       }}
+                      aria-label="Baixar imagem da lenda"
                     >
-                      <Download className="w-3.5 h-3.5" />
+                      <Download className="w-3.5 h-3.5" aria-hidden="true" />
                     </button>
                   </div>
                 </div>

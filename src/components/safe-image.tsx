@@ -39,7 +39,8 @@ export function SafeImage({ src, alt, className, fallbackName, onLoad }: SafeIma
         <div className="absolute inset-0 flex flex-col items-center justify-center p-2 text-center bg-zinc-900/80">
           <img 
             src={fallbackUrl} 
-            alt="Fallback" 
+            alt="" 
+            role="presentation"
             className="w-full h-full object-cover opacity-20 grayscale" 
           />
           <div className="absolute inset-0 flex flex-col items-center justify-center p-4">
@@ -50,6 +51,7 @@ export function SafeImage({ src, alt, className, fallbackName, onLoad }: SafeIma
             <button 
                 onClick={() => { setError(false); setLoading(true); }}
                 className="mt-2 text-[8px] text-primary/80 hover:text-primary transition-colors uppercase font-bold"
+                aria-label="Tentar recarregar imagem"
             >
                 Tentar Recarregar
             </button>
@@ -62,6 +64,7 @@ export function SafeImage({ src, alt, className, fallbackName, onLoad }: SafeIma
           alt={alt}
           fill
           unoptimized={src.startsWith('http')} 
+          decoding="async"
           className={cn(
             "object-cover transition-opacity duration-300",
             error ? "opacity-0" : "opacity-100"

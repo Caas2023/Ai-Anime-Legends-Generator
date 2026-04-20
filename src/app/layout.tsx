@@ -49,6 +49,7 @@ export default function RootLayout({
         />
       </head>
       <body className={`${inter.variable} ${outfit.variable} font-sans min-h-screen bg-background text-foreground selection:bg-primary selection:text-primary-foreground antialiased`}>
+        <a href="#main-content" className="skip-link">Pular para o conteúdo</a>
         {children}
       </body>
     </html>

@@ -35,8 +35,37 @@ export default function Home() {
   const [copied, setCopied] = React.useState(false);
   const [isGenerating, setIsGenerating] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
+  const [apiKey, setApiKey] = React.useState<string | null>(null);
   const { play } = useSound();
   const { images, addImage, removeImage } = useGallery();
+
+  React.useEffect(() => {
+    // Check url fragment for api_key
+    if (typeof window !== "undefined") {
+      const hashParams = new URLSearchParams(window.location.hash.slice(1));
+      const hashKey = hashParams.get('api_key');
+      if (hashKey) {
+        setApiKey(hashKey);
+        localStorage.setItem('pollinations_api_key', hashKey);
+        window.history.replaceState(null, '', window.location.pathname + window.location.search);
+      } else {
+        const stored = localStorage.getItem('pollinations_api_key');
+        if (stored) setApiKey(stored);
+      }
+    }
+  }, []);
+
+  const handleLogin = () => {
+    const params = new URLSearchParams({
+      redirect_url: window.location.href.split('#')[0]
+    });
+    window.location.href = `https://enter.pollinations.ai/authorize?${params}`;
+  };
+
+  const handleLogout = () => {
+    setApiKey(null);
+    localStorage.removeItem('pollinations_api_key');
+  };
 
   const handleEnhance = async () => {
     if (!customPrompt.trim()) return;
@@ -44,9 +73,12 @@ export default function Home() {
     play("click");
 
     try {
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (apiKey) headers["Authorization"] = `Bearer ${apiKey}`;
+
       const res = await fetch("https://gen.pollinations.ai/v1/chat/completions", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify({
           model: "openai",
           messages: [
@@ -81,7 +113,7 @@ export default function Home() {
     setGeneratedImage(null);
     setCurrentPrompt(null);
 
-    const result = await generateImage(selectedCharacter, selectedStyle, customPrompt, selectedSize.width, selectedSize.height);
+    const result = await generateImage(selectedCharacter, selectedStyle, customPrompt, selectedSize.width, selectedSize.height, apiKey || undefined);
 
     if (result.success && result.imageUrl) {
       setGeneratedImage(result.imageUrl);
@@ -155,6 +187,25 @@ export default function Home() {
       </div>
 
       <div className="container max-w-6xl mx-auto px-4 py-8 relative z-10">
+
+        {/* Global Nav / BYOP */}
+        <div className="absolute top-4 right-4 z-50 flex items-center">
+          {apiKey ? (
+            <div className="flex items-center gap-3 bg-black/40 backdrop-blur-xl border border-white/10 p-1.5 pl-4 rounded-full shadow-2xl">
+              <span className="text-xs font-bold text-emerald-400 flex items-center">
+                <Check className="w-3 h-3 mr-1" />
+                <span className="hidden md:inline">Pollen Ativo</span>
+              </span>
+              <Button size="sm" variant="ghost" onClick={handleLogout} className="h-8 rounded-full text-xs hover:bg-white/10 text-white/70">Sair</Button>
+            </div>
+          ) : (
+            <Button size="sm" variant="outline" onClick={handleLogin} className="h-10 rounded-full border-primary/50 bg-primary/10 text-primary hover:bg-primary/20 backdrop-blur-md shadow-lg shadow-primary/20 gap-2">
+              <Sparkles className="w-4 h-4" />
+              <span className="hidden md:inline font-bold">Zere os Custos (BYOP)</span>
+              <span className="md:hidden font-bold">BYOP</span>
+            </Button>
+          )}
+        </div>
 
         {/* Header */}
         <motion.div

@@ -83,7 +83,8 @@ const STYLES: Record<string, string> = {
 async function getDynamicPrompt(
   characterLabel: string,
   styleLabel: string,
-  customDetails: string
+  customDetails: string,
+  apiKey?: string
 ): Promise<string | null> {
   try {
     const controller = new AbortController();
@@ -92,7 +93,9 @@ async function getDynamicPrompt(
     const headers: Record<string, string> = { "Content-Type": "application/json" };
     const url = "https://gen.pollinations.ai/v1/chat/completions";
 
-    if (POLLINATIONS_KEY) {
+    if (apiKey) {
+      headers["Authorization"] = `Bearer ${apiKey}`;
+    } else if (POLLINATIONS_KEY) {
       headers["Authorization"] = `Bearer ${POLLINATIONS_KEY}`;
     }
 
@@ -186,7 +189,8 @@ async function fetchFromPollinations(
   prompt: string,
   width: number,
   height: number,
-  model: string = POLLINATIONS_MODEL_PRIMARY
+  model: string = POLLINATIONS_MODEL_PRIMARY,
+  apiKey?: string
 ): Promise<{ buffer: Buffer; contentType: string } | null> {
   const truncated = prompt.substring(0, MAX_PROMPT_LENGTH);
   const encoded = encodeURIComponent(truncated);
@@ -202,7 +206,9 @@ async function fetchFromPollinations(
     const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
     const headers: Record<string, string> = {};
-    if (POLLINATIONS_KEY) {
+    if (apiKey) {
+      headers["Authorization"] = `Bearer ${apiKey}`;
+    } else if (POLLINATIONS_KEY) {
       headers["Authorization"] = `Bearer ${POLLINATIONS_KEY}`;
     }
 
@@ -232,7 +238,8 @@ export async function generateImage(
   styleId: string,
   customPrompt?: string,
   width: number = 768,
-  height: number = 1024
+  height: number = 1024,
+  apiKey?: string
 ) {
   try {
     const characterLabel = CHARACTERS[characterId] || characterId;
@@ -242,7 +249,7 @@ export async function generateImage(
     console.log(`[GEN] ${characterId} | ${styleId} | ${new Date().toISOString()}`);
 
     // 1. Prompt dinâmico via IA de texto (Pollinations)
-    let finalPrompt = await getDynamicPrompt(characterLabel, styleLabel, customPrompt || "");
+    let finalPrompt = await getDynamicPrompt(characterLabel, styleLabel, customPrompt || "", apiKey);
 
     // 2. Fallback: prompt fixo
     if (!finalPrompt) {
@@ -255,7 +262,7 @@ export async function generateImage(
 
     // 3. Tenta modelo primário: flux
     console.log("[GEN] >>> Tentando Pollinations (flux)...");
-    let result = await fetchFromPollinations(finalPrompt, width, height, POLLINATIONS_MODEL_PRIMARY);
+    let result = await fetchFromPollinations(finalPrompt, width, height, POLLINATIONS_MODEL_PRIMARY, apiKey);
 
     // 4. Retry com prompt simplificado no mesmo modelo
     if (!result) {
@@ -263,14 +270,14 @@ export async function generateImage(
       const simplePrompt = `anime art, ${CHARACTERS[characterId] || "anime character"}, ${
         STYLES[styleId] || "high quality"
       }`;
-      result = await fetchFromPollinations(simplePrompt, width, height, POLLINATIONS_MODEL_PRIMARY);
+      result = await fetchFromPollinations(simplePrompt, width, height, POLLINATIONS_MODEL_PRIMARY, apiKey);
       if (result) finalPrompt = simplePrompt;
     }
 
     // 5. Retry com modelo alternativo: turbo
     if (!result) {
       console.log("[GEN] >>> Retry Pollinations (turbo)...");
-      result = await fetchFromPollinations(finalPrompt, width, height, POLLINATIONS_MODEL_FALLBACK);
+      result = await fetchFromPollinations(finalPrompt, width, height, POLLINATIONS_MODEL_FALLBACK, apiKey);
     }
 
     // 6. Último retry: turbo + prompt simples
@@ -279,7 +286,7 @@ export async function generateImage(
       const simplePrompt = `anime art, ${CHARACTERS[characterId] || "anime character"}, ${
         STYLES[styleId] || "high quality"
       }`;
-      result = await fetchFromPollinations(simplePrompt, width, height, POLLINATIONS_MODEL_FALLBACK);
+      result = await fetchFromPollinations(simplePrompt, width, height, POLLINATIONS_MODEL_FALLBACK, apiKey);
       if (result) finalPrompt = simplePrompt;
     }
 

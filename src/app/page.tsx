@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Image from "next/image";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { 
     Wand2, 
     Download, 
@@ -47,6 +47,7 @@ const IMAGE_SIZES = [
 ];
 
 export default function Home() {
+  const shouldReduceMotion = useReducedMotion();
   const [selectedCharacter, setSelectedCharacter] = React.useState<string>("goku");
   const [selectedStyle, setSelectedStyle] = React.useState<string>("flux");
   const [selectedSize, setSelectedSize] = React.useState(IMAGE_SIZES[0]);
@@ -410,9 +411,9 @@ export default function Home() {
             {activeTab === "workstation" && (
               <motion.div
                 key="workstation"
-                initial={{ opacity: 0, y: 20 }}
+                initial={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
+                exit={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, y: -20 }}
                 className="grid grid-cols-1 lg:grid-cols-12 gap-8 h-full"
               >
                 {/* Coluna 1: O Herói (Esquerda) */}
@@ -443,31 +444,29 @@ export default function Home() {
                   animate={{ opacity: 1, y: 0 }}
                   className="lg:col-span-5 xl:col-span-6 space-y-5"
                 >
-                  <div className="space-y-3">
+                  <fieldset className="space-y-3 border-none p-0 m-0">
+                    <legend className="sr-only">Escolha o Estilo Artístico</legend>
                     <div className="flex items-center gap-2 group" aria-label="Etapa 2: Escolha do Estilo">
                       <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-background font-black text-[10px] shadow-[0_0_15px_var(--accent-glow)]" aria-hidden="true">2</div>
                       <h2 className="text-sm font-black tracking-tighter uppercase text-primary">Estilos</h2>
                     </div>
 
-
-
                     <div className="celestial-card p-3">
-
                       <ModelSelector
                         value={selectedStyle}
                         onChange={(val) => { setSelectedStyle(val); play("click"); }}
                         disabled={isGenerating || isGeneratingVideo}
                       />
                     </div>
-                  </div>
+                  </fieldset>
 
-                  <div className="space-y-3">
+
+                  <fieldset className="space-y-3 border-none p-0 m-0">
+                    <legend className="sr-only">Escolha a Razão de Aspecto</legend>
                     <div className="flex items-center gap-2 group" aria-label="Etapa 3: Razão de Aspecto">
                       <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-background font-black text-[10px] shadow-[0_0_15px_var(--accent-glow)]" aria-hidden="true">3</div>
                       <h2 className="text-sm font-black tracking-tighter uppercase text-primary">Tamanhos</h2>
                     </div>
-
-
 
                     <div className="flex flex-wrap gap-1.5 celestial-card p-1.5 border-border">
                       {IMAGE_SIZES.map((size) => (
@@ -487,7 +486,8 @@ export default function Home() {
                         </button>
                       ))}
                     </div>
-                  </div>
+                  </fieldset>
+
 
                   <div className="space-y-3">
                     <div className="flex items-center gap-2 group" aria-label="Etapa 4: Detalhes e Invocação">
@@ -587,7 +587,7 @@ export default function Home() {
                           <div className="absolute inset-0 border-2 border-t-secondary border-l-primary rounded-full animate-spin" />
                           <Sparkles className="absolute inset-0 m-auto w-8 h-8 text-secondary animate-pulse" />
                         </div>
-                        <h3 className="text-xs font-black uppercase tracking-[0.3em] text-glow">Manifestando...</h3>
+                        <h3 className="text-xs font-black uppercase tracking-[0.3em] text-glow" aria-live="polite">Manifestando...</h3>
                       </div>
                     ) : (
                       <div className="absolute inset-0 flex flex-col items-center justify-center p-12 text-center opacity-30">

@@ -55,6 +55,12 @@ export function ModelSelector({ value, onChange, disabled }: ModelSelectorProps)
               <span className="text-[7.5px] font-black uppercase tracking-widest text-center truncate w-full">
                 {style.label.split(' ')[0]}
               </span>
+
+              {isSelected && (
+                <div className="absolute top-1 right-1 bg-white rounded-full p-0.5 shadow-lg">
+                  <Check className="w-2 h-2 text-primary stroke-[4px]" />
+                </div>
+              )}
             </button>
 
 

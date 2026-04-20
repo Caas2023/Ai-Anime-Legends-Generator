@@ -4,6 +4,7 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 import { SafeImage } from "./safe-image";
 import { CHARACTERS } from "@/lib/constants";
+import { Check } from "lucide-react";
 
 interface CharacterSelectorProps {
   value: string;
@@ -79,6 +80,12 @@ export function CharacterSelector({ value, onChange, disabled }: CharacterSelect
 
 
                 </div>
+
+                {isSelected && (
+                  <div className="absolute top-1 right-1 bg-accent rounded-full p-0.5 shadow-lg border border-white/20">
+                    <Check className="w-2.5 h-2.5 text-background stroke-[4px]" />
+                  </div>
+                )}
               </div>
             </button>
           );

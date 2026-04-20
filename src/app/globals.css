@@ -137,3 +137,44 @@
     @apply bg-primary/20 rounded-full hover:bg-primary/40 transition-colors;
   }
 }
+/* A11y Utilities: Ocultação visual mantendo suporte a leitores de tela */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* [Especialista Frontend] Suporte a Temas de Alto Contraste do Sistema */
+@media (prefers-contrast: more) {
+  .glass-panel {
+    background: #000 !important;
+    backdrop-filter: none !important;
+    border: 1px solid #fff !important;
+    box-shadow: none !important;
+  }
+  
+  .celestial-card {
+    background: #000 !important;
+    border: 2px solid #fff !important;
+    box-shadow: none !important;
+  }
+
+  .text-glow {
+    text-shadow: none !important;
+    color: #fff !important;
+  }
+  
+  .text-primary, .text-foreground {
+    color: #fff !important;
+  }
+
+  .text-secondary, .text-muted-foreground {
+    color: #f1f5f9 !important;
+  }
+}

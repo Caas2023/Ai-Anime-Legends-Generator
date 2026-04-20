@@ -85,15 +85,16 @@ export async function generateImage(
   extraPrompt: string = "",
   width: number = 768,
   height: number = 1024,
-  apiKey?: string
+  apiKey?: string,
+  model?: string
 ) {
   try {
     const characterBase = CHARACTERS[characterId] || "Anime character";
-    const styleBase = STYLES[styleId] || STYLES.flux;
+    // Escolha do Modelo: Usa o fornecido ou decide pelo estilo
+    const targetModel = model || (styleId === "realistic" ? POLLINATIONS_MODEL_FALLBACK : POLLINATIONS_MODEL_PRIMARY);
     
     // Composição do Prompt Final
     const finalPrompt = `${characterBase}, in a unique epic random scene: ${extraPrompt}, ${styleBase}, intricate background, masterpiece, trending on pixiv`;
-    const targetModel = styleId === "realistic" ? POLLINATIONS_MODEL_FALLBACK : POLLINATIONS_MODEL_PRIMARY;
     
     // Link básico do Pollinations
     const encodedPrompt = encodeURIComponent(finalPrompt.substring(0, MAX_PROMPT_LENGTH));

@@ -2,10 +2,11 @@
 
 import * as React from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Download, Eye, Play, Sparkles, AlertCircle } from "lucide-react";
+import { Download, Eye, Play, Sparkles, AlertCircle, Copy, Share2, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/supabase";
 import { SafeImage } from "./safe-image";
+import { cn } from "@/lib/utils";
 
 interface feedItem {
   id: string;
@@ -131,12 +132,50 @@ export function CommunityFeed() {
                       size="icon" 
                       variant="ghost" 
                       className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigator.clipboard.writeText(item.prompt);
+                        const btn = e.currentTarget;
+                        const original = btn.innerHTML;
+                        btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check text-green-400"><path d="M20 6 9 17l-5-5"/></svg>';
+                        setTimeout(() => { btn.innerHTML = original; }, 2000);
+                      }}
+                      title="Copiar Prompt"
+                    >
+                      <Copy className="w-3.5 h-3.5" />
+                    </Button>
+                    <Button 
+                      size="icon" 
+                      variant="ghost" 
+                      className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (navigator.share) {
+                          navigator.share({
+                            title: `AI Anime Legends - ${item.character_id}`,
+                            text: `Confira esta arte incrível gerada por IA! Prompt: ${item.prompt}`,
+                            url: item.image_url
+                          });
+                        } else {
+                          navigator.clipboard.writeText(item.image_url);
+                          alert("Link copiado!");
+                        }
+                      }}
+                      title="Compartilhar"
+                    >
+                      <Share2 className="w-3.5 h-3.5" />
+                    </Button>
+                    <Button 
+                      size="icon" 
+                      variant="ghost" 
+                      className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white"
                       onClick={() => {
                         const link = document.createElement('a');
                         link.href = item.image_url;
                         link.download = `legend-${item.id}.jpg`;
                         link.click();
                       }}
+                      title="Baixar"
                     >
                       <Download className="w-3.5 h-3.5" />
                     </Button>

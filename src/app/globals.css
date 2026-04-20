@@ -109,7 +109,7 @@
   .text-primary { color: var(--text-primary); }
   .text-secondary { color: var(--text-secondary); }
 
-  /* Comportamento de MÃ­dia */
+  /* Comportamento de MÃ©dia */
   img {
     transition: filter 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   }
@@ -137,7 +137,8 @@
     @apply bg-primary/20 rounded-full hover:bg-primary/40 transition-colors;
   }
 }
-/* A11y Utilities: Ocultação visual mantendo suporte a leitores de tela */
+
+/* A11y Utilities: OcultaÃ§Ã£o visual mantendo suporte a leitores de tela */
 .sr-only {
   position: absolute;
   width: 1px;
@@ -179,7 +180,7 @@
   }
 }
 
-/* Skip Link: Essencial para navegação por teclado (web.dev/Design) */
+/* Skip Link: Essencial para navegaÃ§Ã£o por teclado (web.dev/Design) */
 .skip-link {
   position: absolute;
   top: -100px;

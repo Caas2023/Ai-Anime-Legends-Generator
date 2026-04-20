@@ -318,9 +318,9 @@ export default function Home() {
                                 {['flux', 'flux-realism', 'openai', 'any-dark'].map(m => (
                                     <button
                                         key={m}
-                                        onClick={() => onChange(style.id)}
-                                        disabled={disabled}
-                                        aria-label={`Selecionar estilo ${style.label}`}
+                                        onClick={() => setImageModel(m)}
+                                        disabled={isGenerating}
+                                        aria-label={`Selecionar modelo ${m}`}
                                         className={cn(
                                             "px-3 py-2 rounded-xl border text-[9px] font-black uppercase tracking-tighter transition-all",
                                             imageModel === m ? "bg-primary border-transparent text-primary-foreground" : "bg-foreground/5 border-border text-foreground/40 hover:text-foreground"
@@ -724,7 +724,7 @@ export default function Home() {
           >
             <Share2 className="w-3 h-3" /> Mural
           </button>
-        </div>
+        </nav>
       </div>
     </main>
   );

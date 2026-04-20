@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
-import { Palette, Box, Film, Camera, Zap, FileImage, Droplets, Ghost } from "lucide-react";
+import { Palette, Box, Film, Camera, Zap, FileImage, Droplets, Ghost, Check } from "lucide-react";
 import { ART_STYLES } from "@/lib/constants";
 import { LucideIcon } from "lucide-react";
 

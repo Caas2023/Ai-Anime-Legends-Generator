@@ -12,6 +12,8 @@ interface feedItem {
   id: string;
   image_url: string;
   character_id: string;
+  character_name?: string;
+  anime_name?: string;
   style_id: string;
   prompt: string;
   is_video: boolean;
@@ -98,7 +100,7 @@ export function CommunityFeed() {
             >
               <SafeImage
                 src={item.image_url}
-                alt={item.prompt}
+                alt={`Lenda Anime de ${item.character_name || item.character_id} (${item.anime_name || 'Anime'}) - ${item.prompt}`}
                 className="w-full h-full"
               />
               
@@ -107,7 +109,7 @@ export function CommunityFeed() {
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
                     <span className="text-[10px] bg-primary/20 text-primary px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
-                      {item.character_id}
+                      {item.character_name || item.character_id}
                     </span>
                     {item.is_video && (
                       <span className="text-[10px] bg-purple-500/20 text-purple-400 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider flex items-center">

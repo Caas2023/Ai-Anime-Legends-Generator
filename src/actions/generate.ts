@@ -1,6 +1,9 @@
 "use server";
 
 import { supabase } from "@/lib/supabase";
+import { CHARACTERS as UI_CHARACTERS } from "@/lib/constants";
+import { slugify } from "@/lib/utils";
+
 
 // === CONFIGURAÇÃO ===
 const POLLINATIONS_MODEL_PRIMARY = "flux";
@@ -126,7 +129,13 @@ export async function generateImage(
     // Tentar salvar no Supabase (Storage + Table) se estiver configurado
     if (supabase) {
       try {
-        const fileName = `${Date.now()}-${characterId}.jpg`;
+        // Encontrar metadados para SEO
+        const charData = UI_CHARACTERS.find(c => c.id === characterId);
+        const charLabel = charData?.label || characterId;
+        const charAnime = charData?.anime || "Anime";
+        
+        const nameSlug = slugify(`${charLabel} ${charAnime}`);
+        const fileName = `anime-legenda-${nameSlug}-${Date.now()}.jpg`;
         let finalUrl = pollinationsUrl;
 
         // 1. Tentar upload para o Storage Bucket 'gallery'
@@ -153,6 +162,8 @@ export async function generateImage(
         const { error: feedError } = await supabase.from("community_feed").insert({
           image_url: finalUrl,
           character_id: characterId,
+          character_name: charLabel,
+          anime_name: charAnime,
           style_id: styleId,
           prompt: finalPrompt,
           is_video: false

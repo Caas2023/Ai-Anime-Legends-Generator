@@ -1,0 +1,17 @@
+{
+  "name": "Ai Anime Legends Generator",
+  "short_name": "Anime Legends",
+  "description": "Crie arte anime épica com IA profissional.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#05070a",
+  "theme_color": "#2563eb",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

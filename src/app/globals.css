@@ -1,49 +1,48 @@
 @import "tailwindcss";
 
 :root {
-  /* arquiteto-principal: Sistema de Design Ergonômico (HSL Architecture v5.6) */
+  /* arquiteto-principal: Sistema de Design Ergonômico (HSL Architecture v5.7 - Especialista) */
   --base-weight: 400;
   
-  /* [Passo 1 & 2] Camada 1: Backgrounds (HSL) */
-  --bg-app: hsl(0, 0%, 99%);     /* Off-white p/ mitigar fadiga */
-  --bg-surface: hsl(0, 0%, 100%); /* Puro p/ superfícies secundárias */
+  /* [Passo 1 & 2] Camada 1: Backgrounds (Glacial White Protocol) */
+  --bg-app: hsl(0, 0%, 98%);     /* Off-white p/ reduzir brilho agressivo */
+  --bg-surface: hsl(0, 0%, 100%); 
 
-  /* Camada 2: Textos (HSL) */
-  --text-primary: hsl(220, 10%, 10%);   /* Quase preto ergonômico */
-  --text-secondary: hsl(220, 10%, 35%); /* Hierarquia visual secundária */
-
-  /* Camada 3: Primárias/Ação (HSL) */
-  --accent: hsl(161, 84%, 39%);      /* Esmeralda Industrial */
-  --accent-glow: hsla(161, 84%, 39%, 0.2);
+  /* Camada 2: Textos (Absolute Contrast Protocol v7.0) */
+  --text-primary: hsl(0, 0%, 0%);     /* Preto Absoluto */
+  --text-secondary: hsl(0, 0%, 20%);  /* Cinza Muito Escuro */
+ 
+  /* Camada 3: Ações */
+  --accent: hsl(161, 84%, 40%);      
+  --cta-photo: hsl(24, 95%, 42%);    
+  --cta-video: hsl(239, 84%, 60%);   
   
-  --border: hsla(0, 0%, 0%, 0.08);
-  --shadow: 0 4px 24px hsla(0, 0%, 0%, 0.04);
+  --border: hsla(0, 0%, 0%, 0.15);
+  --shadow: 0 4px 20px hsla(0, 0%, 0%, 0.1);
 }
 
 .dark-theme {
-  /* [Passo 3] Modo Escuro: Engenharia de Fadiga Visual */
+  /* [Passo 3] Modo Escuro Industrial: Foco em Nitidez Cirúrgica */
   
-  /* Camada 1: Backgrounds (Evitando HSL 0,0,0) */
-  --bg-app: hsl(220, 12%, 7%);     /* Cinza Antracite p/ evitar Halation */
-  --bg-surface: hsl(220, 12%, 11%); /* Cartões mais claros que o fundo */
+  /* Camada 1: Backgrounds */
+  --bg-app: hsl(222, 15%, 4%);      /* Mais profundo para destacar o branco */
+  --bg-surface: hsl(222, 15%, 8%); 
   
-  /* Camada 2: Textos (Off-white p/ evitar Radiação Visual) */
-  --text-primary: hsl(210, 40%, 98%);
-  --text-secondary: hsl(214, 25%, 80%);
+  /* Camada 2: Textos */
+  --text-primary: hsl(0, 0%, 100%);  /* Branco Absoluto */
+  --text-secondary: hsl(0, 0%, 85%); 
   
-  /* Camada 3: Ação (Dessaturação p/ Modo Escuro) */
-  --accent: hsl(158, 70%, 65%); /* Menos saturado p/ não vibre no escuro */
-  --accent-glow: hsla(158, 70%, 65%, 0.4);
+  /* Camada 3: Ações */
+  --accent: hsl(161, 60%, 55%); 
+  --cta-photo: hsl(24, 85%, 55%); 
+  --cta-video: hsl(239, 70%, 65%); 
   
-  --border: hsla(0, 0%, 100%, 0.12);
-  --muted-foreground: hsl(240, 5%, 65%); 
+  --border: hsla(0, 0%, 100%, 0.15);
+  --muted-foreground: hsl(0, 0%, 75%); 
 
-  /* [Passo 5] Acessibilidade: Suporte a Contraste Mínimo do Sistema */
   @media (prefers-contrast: more) {
     --text-primary: hsl(0, 0%, 100%);
     --text-secondary: hsl(0, 0%, 95%);
-    --accent: hsl(161, 84%, 39%);
-    --border: hsla(0, 0%, 100%, 0.4);
     --bg-surface: hsl(0, 0%, 0%);
   }
 }
@@ -52,6 +51,8 @@
   --color-background: var(--bg-app);
   --color-foreground: var(--text-primary);
   --color-primary: var(--accent);
+  --color-cta-photo: var(--cta-photo);
+  --color-cta-video: var(--cta-video);
   --color-card: var(--bg-surface);
   --color-border: var(--border);
   
@@ -69,16 +70,14 @@
     background-color: var(--bg-app);
     color: var(--text-primary);
     font-family: var(--font-inter), system-ui, sans-serif;
-    /* [Ergonomia] Compensação de peso no modo claro */
     font-variation-settings: "wght" var(--base-weight);
     transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
                 color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .dark-theme body {
-    /* [Re-engenharia de HALATION] Redução de peso visual p/ texto branco */
     --base-weight: 340; 
-    letter-spacing: 0.02ch; 
+    letter-spacing: 0.01ch; 
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -99,8 +98,7 @@
   }
 
   .dark-theme .celestial-card {
-    /* [Deep Design] Glow interno sutil p/ volume em baixa luminosidade */
-    box-shadow: inset 0 1px 0 hsla(0, 0%, 100%, 0.05); 
+    box-shadow: inset 0 1px 0 hsla(0, 0%, 100%, 0.03); 
     box-shadow: 0 8px 32px hsla(0, 0%, 0%, 0.4);
   }
 
@@ -112,7 +110,7 @@
   }
 
   .dark-theme img {
-    filter: brightness(0.85) grayscale(10%);
+    filter: brightness(0.85) grayscale(12%);
   }
 
   .dark-theme img:hover {
@@ -131,6 +129,23 @@
   .custom-scrollbar::-webkit-scrollbar-thumb {
     @apply bg-primary/20 rounded-full hover:bg-primary/40 transition-colors;
   }
+
+  /* Protocolo de Scroll Snap Industrial */
+  .snap-container {
+    scroll-snap-type: y proximity;
+    overflow-y: auto;
+    scroll-behavior: smooth;
+  }
+
+  .snap-section {
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+  }
+
+  /* Ajustes de Safe Area para Mobile Moderno */
+  .safe-padding-bottom {
+    padding-bottom: calc(4rem + env(safe-area-inset-bottom));
+  }
 }
 
 .sr-only {
@@ -143,34 +158,6 @@
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border-width: 0;
-}
-
-@media (prefers-contrast: more) {
-  .glass-panel {
-    background: hsl(0, 0%, 0%) !important;
-    backdrop-filter: none !important;
-    border: 1px solid hsl(0, 0%, 100%) !important;
-    box-shadow: none !important;
-  }
-  
-  .celestial-card {
-    background: hsl(0, 0%, 0%) !important;
-    border: 2px solid hsl(0, 0%, 100%) !important;
-    box-shadow: none !important;
-  }
-
-  .text-glow {
-    text-shadow: none !important;
-    color: hsl(0, 0%, 100%) !important;
-  }
-  
-  .text-primary, .text-foreground {
-    color: hsl(0, 0%, 100%) !important;
-  }
-
-  .text-secondary, .text-muted-foreground {
-    color: hsl(0, 0%, 95%) !important;
-  }
 }
 
 .skip-link {

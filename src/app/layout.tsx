@@ -10,6 +10,14 @@ export const metadata: Metadata = {
   description: "Crie lendas com IA. Escolha seu personagem, defina o estilo e deixe o Anime Legends Generator criar uma obra-prima.",
   keywords: ["anime", "ia", "gerador de arte", "dragon ball", "naruto", "jujutsu kaisen", "one piece", "ai art"],
   robots: "index, follow",
+  manifest: "/manifest.webmanifest",
+  themeColor: "#05070a",
+  viewport: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0, viewport-fit=cover",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Anime Legends",
+  },
   openGraph: {
     title: "Ai Anime Legends Generator",
     description: "Crie arte anime épica com IA. Escolha seu personagem, defina o estilo e deixe a IA criar uma obra-prima.",

@@ -107,6 +107,7 @@ export function CommunityFeed() {
               <SafeImage
                 src={item.image_url}
                 alt={item.prompt}
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 300px"
                 className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
               />
               
@@ -172,8 +173,8 @@ export function CommunityFeed() {
       {items.length === 0 && supabase && (
         <div className="w-full py-32 glass-panel rounded-[3rem] border-border flex flex-col items-center justify-center text-center">
           <Sparkles className="w-12 h-12 text-foreground/10 mb-6" />
-          <p className="text-[11px] font-black text-foreground/45 uppercase tracking-[0.5em]">O Vazio das Lendas</p>
-          <p className="text-[10px] font-bold text-foreground/35 uppercase tracking-widest mt-4">Nenhuma criação manifestada ainda</p>
+          <p className="text-[11px] font-black text-foreground/80 uppercase tracking-[0.5em]">O Vazio das Lendas</p>
+          <p className="text-[10px] font-bold text-foreground/70 uppercase tracking-widest mt-4">Nenhuma criação manifestada ainda</p>
         </div>
       )}
 

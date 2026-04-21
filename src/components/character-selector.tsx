@@ -52,7 +52,7 @@ export function CharacterSelector({ value, onChange, disabled }: CharacterSelect
             >
               <div className="flex flex-col xl:flex-row items-center gap-2">
                 <div className={cn(
-                    "w-10 h-10 xl:w-9 xl:h-9 rounded-full overflow-hidden border transition-transform duration-700 group-hover:rotate-6 group-hover:scale-110 flex-shrink-0",
+                    "w-12 h-12 xl:w-9 xl:h-9 rounded-full overflow-hidden border transition-transform duration-700 group-hover:rotate-6 group-hover:scale-110 flex-shrink-0",
                     isSelected ? "border-accent shadow-[0_0_15px_var(--accent-glow)]" : "border-border"
                 )}>
 
@@ -61,6 +61,7 @@ export function CharacterSelector({ value, onChange, disabled }: CharacterSelect
                     src={photoUrl} 
                     alt="" 
                     fallbackName={char.label}
+                    sizes="64px"
                     className="w-full h-full object-cover" 
                   />
                 </div>
@@ -68,11 +69,11 @@ export function CharacterSelector({ value, onChange, disabled }: CharacterSelect
                 <div className="text-center xl:text-left flex-1 overflow-hidden">
                     <p className={cn(
                         "text-[9px] xl:text-[11px] font-black uppercase tracking-tight truncate leading-tight transition-colors",
-                         isSelected ? "text-foreground" : "text-white/90"
+                          isSelected ? "text-primary" : "text-foreground/80"
                     )}>
                         {char.label}
                     </p>
-                    <p className="hidden xl:block text-[8px] font-bold text-white/50 uppercase tracking-widest mt-0.5 truncate">
+                    <p className="hidden xl:block text-[8px] font-bold text-foreground/75 uppercase tracking-widest mt-0.5 truncate">
                         {char.anime}
                     </p>
 

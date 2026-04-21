@@ -37,6 +37,17 @@ import dynamic from "next/dynamic";
 const CommunityFeed = dynamic(() => import("@/components/community-feed").then(mod => mod.CommunityFeed), { ssr: false });
 const Gallery = dynamic(() => import("@/components/gallery").then(mod => mod.Gallery), { ssr: false });
 
+// NÚCLEO DE INTELIGÊNCIA: Protocolo de Invocação Elite (@senior-prompt-engineer v8.4.1)
+const SYSTEM_OPTIMIZER_PROMPT = `As a World-Class AI Prompt Engineer for High-End Anime Art, your mission is to merge Character context, Art Style, and User Requests into a single production-grade image prompt.
+RULES:
+1. CORE CONTEXT: Use the provided Character and Art Style as the foundation.
+2. ACTION FUSION: Integrate the user's request naturally.
+3. LANGUAGE: You MUST translate everything to English. NO Portuguese or other languages in the output.
+4. STRUCTURE: Describe the Character (outfit, pose) -> Action (translated to English) -> Environment -> Lighting -> Tech Specs.
+5. STYLE ADHERENCE: Use 90s aesthetic for Retro, neon for Cyberpunk, etc.
+6. OUTPUT: Return ONLY the final detailed prompt in English, no explanations. 
+   Example Output: "Naruto Uzumaki in his orange jumpsuit, holding a fluffy Shiba Inu dog, Konoha village background, soft sunlight filtering through trees, vibrant anime colors, 8k, masterpiece".`;
+
 
 const IMAGE_SIZES = [
   { id: "portrait", label: "Retrato (3:4)", width: 768, height: 1024, icon: "📱" },
@@ -68,10 +79,45 @@ export default function Home() {
   const [videoModel, setVideoModel] = React.useState("ltx");
   const { play } = useSound();
   const { images, addImage, removeImage } = useGallery();
-  const [activeTab, setActiveTab] = React.useState<"workstation" | "gallery" | "mural">("workstation");
+
+  // PWA Support States
+  const [deferredPrompt, setDeferredPrompt] = React.useState<any>(null);
+  const [showInstallBanner, setShowInstallBanner] = React.useState(false);
+
+  React.useEffect(() => {
+    const handleBeforeInstallPrompt = (e: any) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      // Check if not already in standalone mode
+      const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+      if (!isStandalone) {
+        setShowInstallBanner(true);
+      }
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+  }, []);
+
+  const handleInstallApp = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      setShowInstallBanner(false);
+      setDeferredPrompt(null);
+    }
+  };
 
 
   React.useEffect(() => {
+    // Register Service Worker for PWA
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').catch(err => console.log('SW registration failed:', err));
+      });
+    }
+
     // Check url fragment for api_key
     if (typeof window !== "undefined") {
       const hashParams = new URLSearchParams(window.location.hash.slice(1));
@@ -104,6 +150,11 @@ export default function Home() {
     setIsEnhancing(true);
     play("click");
 
+    // Context Retrieval (v8.4)
+    const characterData = CHARACTERS.find(c => c.id === selectedCharacter);
+    const styleData = ART_STYLES.find(s => s.id === selectedStyle);
+    const contextInfo = `Context: Character ${characterData?.label} (${characterData?.anime} anime), Art Style: ${styleData?.label}. User Request: ${customPrompt}`;
+
     try {
       const headers: Record<string, string> = { "Content-Type": "application/json" };
       if (apiKey) headers["Authorization"] = `Bearer ${apiKey}`;
@@ -114,8 +165,8 @@ export default function Home() {
         body: JSON.stringify({
           model: "openai",
           messages: [
-            { role: "system", content: "Você é um especialista em prompts para IA de imagem. Receba um prompt curto e retorne uma versão melhorada, mais detalhada e criativa, em inglês. Retorne APENAS o texto do prompt melhorado sem explicações." },
-            { role: "user", content: customPrompt }
+            { role: "system", content: SYSTEM_OPTIMIZER_PROMPT },
+            { role: "user", content: `Integrate and expand this context into a masterpiece anime prompt: ${contextInfo}` }
           ],
           seed: Math.floor(Math.random() * 999999)
         })
@@ -263,7 +314,7 @@ export default function Home() {
     <main 
       id="main-content" 
       tabIndex={-1} 
-      className="h-screen bg-background text-foreground selection:bg-primary/30 relative overflow-hidden font-sans focus:outline-none"
+      className="min-h-screen bg-background text-foreground selection:bg-primary/30 relative overflow-x-hidden font-sans focus:outline-none scroll-smooth snap-container"
     >
 
       
@@ -354,20 +405,18 @@ export default function Home() {
         </AnimatePresence>
 
 
-        <header className="flex items-center justify-between py-4 mb-8">
+        <header className="sticky top-0 z-[50] flex items-center justify-between py-4 mb-8 bg-background/80 backdrop-blur-xl border-b border-white/5 -mx-4 px-4 h-16">
             <div className="flex items-center gap-4">
-                <h1 className="text-3xl font-black tracking-tighter uppercase bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                <h1 className="text-3xl font-black tracking-tighter uppercase text-primary">
                     Ai Anime Legends
                 </h1>
-                <div className="h-6 w-px bg-border/50 hidden md:block" />
-                <p className="hidden md:block text-[10px] font-black text-muted-foreground uppercase tracking-[0.4em]">Celestial workstation v3.5</p>
             </div>
 
             <div className="flex items-center gap-3">
                 {apiKey ? (
                     <div className="flex items-center gap-3 glass-panel pl-2 pr-5 py-1.5 rounded-full border-primary/20">
                         <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary">
-                            <Check className="w-4 h-4" />
+                            <Check className="w-4 h-4" aria-hidden="true" />
                         </div>
                         <div className="flex flex-col">
                             <span className="text-[7px] font-black uppercase tracking-widest text-primary/70 leading-none">Fluxo Ativo</span>
@@ -378,10 +427,10 @@ export default function Home() {
                     <Button
                         variant="ghost"
                         onClick={handleLogin}
-                        className="glass-panel px-6 h-11 rounded-full font-black uppercase text-[9px] tracking-[0.2em] hover:border-primary/50 transition-all group"
+                        className="glass-panel px-6 h-11 rounded-full font-black uppercase text-[9px] tracking-[0.2em] hover:border-primary/50 transition-all group border-primary/10"
                     >
-                        <Wand2 className="w-3.5 h-3.5 mr-2 group-hover:animate-pulse" />
-                        Sincronizar
+                        <Wand2 className="w-3.5 h-3.5 mr-2 group-hover:animate-pulse text-primary" aria-hidden="true" />
+                        Conectar Pollinations
                     </Button>
                 )}
 
@@ -399,36 +448,30 @@ export default function Home() {
                     aria-label="Configurações"
                 >
 
-                    <Settings className={cn("w-5 h-5 transition-transform duration-500", showSettings && "rotate-90")} />
+                    <Settings className={cn("w-5 h-5 transition-transform duration-500", showSettings && "rotate-90")} aria-hidden="true" />
                 </Button>
             </div>
         </header>
 
 
 
-        {/* Workstation Viewport-Locked Area */}
-
-        <div className="h-[calc(100vh-6rem)] relative pb-40 lg:pb-32">
-
-
-          <AnimatePresence mode="wait">
-            {activeTab === "workstation" && (
+        <div className="relative pb-40 lg:pb-32 space-y-16 safe-padding-bottom">
+          {/* Sessão 1: Workstation */}
+          <section id="workstation" className="scroll-mt-24 snap-section">
               <motion.div
-                key="workstation"
                 initial={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, y: -20 }}
-                className="grid grid-cols-1 lg:grid-cols-12 gap-8 h-full"
+                className="grid grid-cols-1 lg:grid-cols-12 gap-8"
               >
                 {/* Coluna 1: O Herói (Esquerda) */}
                 <motion.div
                   initial={{ opacity: 0, x: -50 }}
                   animate={{ opacity: 1, x: 0 }}
-                  className="lg:col-span-3 xl:col-span-2 space-y-6"
+                  className="lg:col-span-2 space-y-6"
                 >
                     <div className="flex items-center gap-4 group" aria-label="Etapa 1: Seleção do Herói">
-                    <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-background font-black text-sm shadow-[0_0_20px_var(--accent-glow)]" aria-hidden="true">1</div>
-                    <h2 className="text-xl font-black tracking-tighter uppercase text-primary">O Herói</h2>
+                    <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-background font-black text-xs" aria-hidden="true">1</div>
+                    <h2 className="text-lg font-black tracking-tighter uppercase text-primary">O Herói</h2>
                   </div>
 
 
@@ -446,7 +489,7 @@ export default function Home() {
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="lg:col-span-5 xl:col-span-6 space-y-5"
+                  className="lg:col-span-4 space-y-5"
                 >
                   <fieldset className="space-y-3 border-none p-0 m-0">
                     <legend className="sr-only">Escolha o Estilo Artístico</legend>
@@ -472,21 +515,22 @@ export default function Home() {
                       <h2 className="text-sm font-black tracking-tighter uppercase text-primary">Tamanhos</h2>
                     </div>
 
-                    <div className="flex flex-wrap gap-1.5 celestial-card p-1.5 border-border">
+                    <div className="grid grid-cols-5 gap-1 celestial-card p-1">
                       {IMAGE_SIZES.map((size) => (
                         <button
                           key={size.id}
+                          aria-label={`Proporção: ${size.label}`}
                           className={cn(
-                            "flex-1 flex items-center justify-center gap-2 py-2 rounded-xl transition-all duration-300 border",
+                            "flex flex-col items-center justify-center py-2.5 rounded-xl transition-all border",
                             selectedSize.id === size.id
-                              ? "bg-white text-black border-transparent shadow-xl"
-                              : "bg-white/5 border-white/5 text-white/30 hover:text-white"
+                              ? "bg-primary text-primary-foreground border-transparent shadow-lg"
+                              : "bg-surface border-border text-foreground hover:bg-muted"
                           )}
                           onClick={() => { setSelectedSize(size); play("click"); }}
                           disabled={isGenerating}
                         >
-                          <span className="text-sm">{size.icon}</span>
-                          <span className="text-[8px] uppercase font-black tracking-widest">{size.label.split(' ')[0]}</span>
+                          <span className="text-lg mb-0.5" aria-hidden="true">{size.icon}</span>
+                          <span className="text-[7px] uppercase font-black tracking-widest">{size.label.split(' ')[0]}</span>
                         </button>
                       ))}
                     </div>
@@ -506,7 +550,7 @@ export default function Home() {
                         placeholder="Ex: Segurando espada de gelo..."
                         value={customPrompt}
                         onChange={(e) => setCustomPrompt(e.target.value)}
-                        className="glass-panel h-11 rounded-xl border-border focus:border-primary/50 text-[10px] px-4 uppercase font-black tracking-widest placeholder:text-foreground/35"
+                        className="glass-panel h-11 rounded-xl border-border focus:border-primary/50 text-[10px] px-4 uppercase font-black tracking-widest placeholder:text-foreground/70"
 
                       />
                       <Button
@@ -538,7 +582,7 @@ export default function Home() {
                           {copied ? "Sincronizado" : "Capturar Prompt"}
                         </Button>
                       </div>
-                      <p className="text-[11px] text-foreground font-medium leading-relaxed italic truncate opacity-90">"{currentPrompt}"</p>
+                      <p className="text-[11px] text-foreground font-bold leading-relaxed italic truncate opacity-100">"{currentPrompt}"</p>
 
 
 
@@ -550,7 +594,7 @@ export default function Home() {
                 <motion.div
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  className="lg:col-span-4 xl:col-span-4 flex flex-col gap-4"
+                  className="lg:col-span-6 flex flex-col gap-4"
                 >
                   <Card className="celestial-card relative flex-1 min-h-[300px] lg:min-h-[400px] overflow-hidden shadow-2xl border-border">
 
@@ -574,6 +618,7 @@ export default function Home() {
                               alt="Arte Anime Gerada" 
                               fill
                               priority
+                              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 800px"
                               className="object-contain rounded-[2rem] dark:brightness-[0.85] dark:contrast-[1.05] hover:brightness-100 transition-all duration-300" 
                             />
                           </div>
@@ -589,14 +634,14 @@ export default function Home() {
                         <div className="relative w-20 h-20 mb-4">
                           <div className="absolute inset-0 border-2 border-primary/20 rounded-full animate-ping" />
                           <div className="absolute inset-0 border-2 border-t-secondary border-l-primary rounded-full animate-spin" />
-                          <Sparkles className="absolute inset-0 m-auto w-8 h-8 text-secondary animate-pulse" />
+                          <Sparkles className="absolute inset-0 m-auto w-8 h-8 text-secondary animate-pulse" aria-hidden="true" />
                         </div>
                         <h3 className="text-xs font-black uppercase tracking-[0.3em] text-glow" aria-live="polite">Manifestando...</h3>
                       </div>
                     ) : (
                       <div className="absolute inset-0 flex flex-col items-center justify-center p-12 text-center opacity-30">
                         <div className="w-16 h-16 glass-panel rounded-3xl flex items-center justify-center mb-6 rotate-12 celestial-border">
-                          <Sparkles className="w-6 h-6 text-white" />
+                          <Sparkles className="w-6 h-6 text-white" aria-hidden="true" />
                         </div>
                         <h3 className="text-xs font-black tracking-widest uppercase">Visualizador</h3>
                       </div>
@@ -608,7 +653,7 @@ export default function Home() {
                     <div className="grid grid-cols-2 gap-3">
                         <Button
                         onClick={() => { handleGenerate(); play("click"); }}
-                        className="h-14 rounded-2xl bg-foreground text-background font-black uppercase tracking-[0.2em] text-[10px] shadow-2xl hover:scale-[1.02] active:scale-[0.98] transition-all"
+                        className="h-14 rounded-2xl bg-cta-photo text-white font-black uppercase tracking-[0.2em] text-[10px] shadow-2xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-cta-photo/20"
                         disabled={isGenerating || isGeneratingVideo}
                         >
                         <Wand2 className="w-4 h-4 mr-2" /> Gerar Foto
@@ -617,7 +662,7 @@ export default function Home() {
                         onClick={() => { if (apiKey) handleGenerateVideo(); }}
                         className={cn(
                             "h-14 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] transition-all shadow-2xl",
-                            apiKey ? "bg-[#6366f1] text-white shadow-[#6366f1]/20 hover:scale-[1.02]" : "bg-muted text-muted-foreground border-border cursor-not-allowed"
+                            apiKey ? "bg-cta-video text-white shadow-cta-video/20 hover:scale-[1.02]" : "bg-muted text-muted-foreground border-border cursor-not-allowed"
                         )}
                         disabled={isGenerating || isGeneratingVideo || !apiKey}
                         >
@@ -639,27 +684,24 @@ export default function Home() {
                         </div>
 
                         <p className="text-[11px] text-foreground font-medium leading-relaxed italic line-clamp-2">"{currentPrompt || "Aguardando invocação..."}"</p>
-
-
                         </motion.div>
                     )}
-                  </div>
-
+                   </div>
                 </motion.div>
-              </motion.div>
-            )}
+            </motion.div>
+          </section>
 
-            {activeTab === "gallery" && (
+          {/* Sessão 2: Galeria */}
+          <section id="gallery" className="scroll-mt-24 pt-8 border-t border-border/30 snap-section">
               <motion.div
-                key="gallery"
                 initial={{ opacity: 0, scale: 0.98 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 1.02 }}
-                className="h-full overflow-y-auto no-scrollbar py-8"
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                className="py-8"
               >
                 <div className="flex flex-col gap-4 mb-8">
                   <h2 className="text-3xl font-black uppercase tracking-tighter">Seus Fragmentos</h2>
-                  <p className="text-[10px] font-black text-white/70 uppercase tracking-[0.4em]">Criações locais desta sessão</p>
+                  <p className="text-[10px] font-black text-foreground/70 uppercase tracking-[0.4em]">Criações locais desta sessão</p>
                 </div>
                 <Gallery
                   images={images}
@@ -668,59 +710,88 @@ export default function Home() {
                     setGeneratedImage(url);
                     const item = images.find(img => img.url === url);
                     if (item?.prompt) setCurrentPrompt(item.prompt);
-                    setActiveTab("workstation");
+                    document.getElementById('workstation')?.scrollIntoView({ behavior: 'smooth' });
                   }}
                 />
               </motion.div>
-            )}
+          </section>
 
-            {activeTab === "mural" && (
+          {/* Sessão 3: Mural */}
+          <section id="mural" className="scroll-mt-24 pt-8 border-t border-border/30 pb-20 snap-section">
               <motion.div
-                key="mural"
                 initial={{ opacity: 0, y: 50 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 1, y: 50 }}
-                className="h-full overflow-y-auto no-scrollbar pb-32"
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
               >
                 <div className="flex flex-col items-center gap-12 pt-12">
                   <div className="flex flex-col items-center text-center space-y-4">
-                  <h2 className="text-4xl md:text-6xl font-black uppercase tracking-tighter text-glow">O Mural</h2>
+                  <h2 className="text-4xl md:text-6xl font-black uppercase tracking-tighter">O Mural</h2>
                   <p className="text-[10px] font-black text-foreground/65 uppercase tracking-[0.6em]">Conexão Neural Global</p>
-
                   </div>
                   <CommunityFeed />
                 </div>
               </motion.div>
-            )}
-          </AnimatePresence>
+          </section>
         </div>
 
+        {/* PWA Install Banner (Industrial Design) */}
+        <AnimatePresence>
+          {showInstallBanner && (
+            <motion.div 
+              initial={{ y: 100, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 100, opacity: 0 }}
+              className="fixed bottom-20 left-4 right-4 z-[150] lg:hidden"
+            >
+              <div className="glass-panel p-4 rounded-3xl border-primary/40 bg-background/80 backdrop-blur-3xl shadow-2xl flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20">
+                    <Sparkles className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h4 className="text-[10px] font-black uppercase tracking-widest text-primary">App Industrial</h4>
+                    <p className="text-[8px] font-bold text-foreground/60 uppercase tracking-tighter">Instale no seu Android</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => setShowInstallBanner(false)}
+                    className="h-9 px-3 text-[8px] font-black uppercase text-foreground/40"
+                  >
+                    Agora não
+                  </Button>
+                  <Button 
+                    size="sm" 
+                    onClick={handleInstallApp}
+                    className="h-9 px-4 text-[8px] font-black uppercase tracking-widest bg-primary text-primary-foreground shadow-lg shadow-primary/20 rounded-xl"
+                  >
+                    Instalar
+                  </Button>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* Global Navigation Tabs */}
-        <nav className="fixed bottom-0 left-0 right-0 h-16 glass-panel border-t border-white/5 flex items-center justify-center gap-12 z-[100] bg-black/80 backdrop-blur-3xl px-8" aria-label="Navegação Global">
+        <nav className="fixed bottom-0 left-0 right-0 h-16 glass-panel border-t border-white/5 flex items-center justify-center gap-2 lg:gap-12 z-[100] bg-background/80 backdrop-blur-3xl px-2 lg:px-8" aria-label="Navegação Global">
           <button
-            onClick={() => { setActiveTab("workstation"); play("click"); }}
-            className={cn(
-              "text-[9px] font-black uppercase tracking-[0.3em] transition-all flex items-center gap-2 px-6 py-2 rounded-full",
-              activeTab === "workstation" ? "text-primary bg-primary/10 shadow-[0_0_20px_rgba(110,231,183,0.3)]" : "text-white/60 hover:text-white"
-            )}
+            onClick={() => { document.getElementById('workstation')?.scrollIntoView({ behavior: 'smooth' }); play("click"); }}
+            className="text-[8px] lg:text-[9px] font-black uppercase tracking-[0.2em] transition-all flex items-center gap-1.5 lg:gap-2 px-3 lg:px-6 py-2 rounded-full text-foreground/60 hover:text-primary hover:bg-primary/5"
           >
             <Sparkles className="w-3 h-3" /> Workstation
           </button>
           <button
-            onClick={() => { setActiveTab("gallery"); play("click"); }}
-            className={cn(
-              "text-[9px] font-black uppercase tracking-[0.3em] transition-all flex items-center gap-2 px-6 py-2 rounded-full",
-              activeTab === "gallery" ? "text-secondary bg-secondary/10 shadow-[0_0_20px_rgba(245,158,11,0.2)]" : "text-white/60 hover:text-white"
-            )}
+            onClick={() => { document.getElementById('gallery')?.scrollIntoView({ behavior: 'smooth' }); play("click"); }}
+            className="text-[8px] lg:text-[9px] font-black uppercase tracking-[0.2em] transition-all flex items-center gap-1.5 lg:gap-2 px-3 lg:px-6 py-2 rounded-full text-foreground/60 hover:text-secondary hover:bg-secondary/5"
           >
             <RefreshCw className="w-3 h-3" /> Galeria
           </button>
           <button
-            onClick={() => { setActiveTab("mural"); play("click"); }}
-            className={cn(
-              "text-[9px] font-black uppercase tracking-[0.3em] transition-all flex items-center gap-2 px-6 py-2 rounded-full",
-              activeTab === "mural" ? "text-accent bg-accent/10 shadow-[0_0_20px_rgba(6,182,212,0.2)]" : "text-white/60 hover:text-white"
-            )}
+            onClick={() => { document.getElementById('mural')?.scrollIntoView({ behavior: 'smooth' }); play("click"); }}
+            className="text-[8px] lg:text-[9px] font-black uppercase tracking-[0.2em] transition-all flex items-center gap-1.5 lg:gap-2 px-3 lg:px-6 py-2 rounded-full text-foreground/60 hover:text-accent hover:bg-accent/5"
           >
             <Share2 className="w-3 h-3" /> Mural
           </button>

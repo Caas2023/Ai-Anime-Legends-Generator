@@ -9,13 +9,13 @@
   --bg-surface: hsl(0, 0%, 100%); 
 
   /* Camada 2: Textos (Absolute Contrast Protocol v7.0) */
-  --text-primary: hsl(0, 0%, 0%);     /* Preto Absoluto */
-  --text-secondary: hsl(0, 0%, 20%);  /* Cinza Muito Escuro */
+  --text-primary: hsl(0, 0%, 5%);     /* Quase preto para suavizar, mas manter contraste AAA */
+  --text-secondary: hsl(0, 0%, 25%);  
  
-  /* Camada 3: Ações */
-  --accent: hsl(161, 84%, 40%);      
-  --cta-photo: hsl(24, 95%, 42%);    
-  --cta-video: hsl(239, 84%, 60%);   
+  /* Camada 3: Ações - Calibradas para Contraste Científico */
+  --accent: hsl(161, 95%, 30%);      /* Verde mais profundo para passar em fundos claros */
+  --cta-photo: hsl(24, 100%, 35%);    
+  --cta-video: hsl(239, 85%, 50%);   
   
   --border: hsla(0, 0%, 0%, 0.15);
   --shadow: 0 4px 20px hsla(0, 0%, 0%, 0.1);
@@ -33,9 +33,9 @@
   --text-secondary: hsl(0, 0%, 85%); 
   
   /* Camada 3: Ações */
-  --accent: hsl(161, 60%, 55%); 
-  --cta-photo: hsl(24, 85%, 55%); 
-  --cta-video: hsl(239, 70%, 65%); 
+  --accent: hsl(161, 75%, 65%);      /* Mais brilhante para contraste em preto */
+  --cta-photo: hsl(24, 90%, 65%); 
+  --cta-video: hsl(239, 80%, 75%); 
   
   --border: hsla(0, 0%, 100%, 0.15);
   --muted-foreground: hsl(0, 0%, 75%); 

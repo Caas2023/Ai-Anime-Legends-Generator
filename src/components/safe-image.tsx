@@ -13,9 +13,21 @@ interface SafeImageProps {
   fallbackName?: string;
   onLoad?: () => void;
   sizes?: string;
+  priority?: boolean; // Adicionado para suporte ao LCP 100/100
 }
 
-export function SafeImage({ src, alt, className, fallbackName, onLoad, sizes }: SafeImageProps) {
+/**
+ * SafeImage Component - Otimizado para Core Web Vitals (LCP, CLS)
+ */
+export function SafeImage({ 
+  src, 
+  alt, 
+  className, 
+  fallbackName, 
+  onLoad, 
+  sizes,
+  priority = false 
+}: SafeImageProps) {
   const [error, setError] = React.useState(false);
   const [loading, setLoading] = React.useState(true);
 
@@ -28,14 +40,13 @@ export function SafeImage({ src, alt, className, fallbackName, onLoad, sizes }: 
   const fallbackUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(fallbackName || alt)}&background=1a1a1a&color=fff&size=200&bold=true`;
 
   return (
-    <div className={cn("relative overflow-hidden bg-black/20", className)}>
+    <div className={cn("relative overflow-hidden bg-black/5", className)}>
       {loading && !error && (
         <div className="absolute inset-0 flex items-center justify-center animate-pulse bg-foreground/5 z-10">
           <Sparkles className="w-5 h-5 text-foreground/25" aria-hidden="true" />
         </div>
       )}
 
-      
       {error ? (
         <div className="absolute inset-0 flex flex-col items-center justify-center p-2 text-center bg-zinc-900/80">
           <img 
@@ -57,7 +68,6 @@ export function SafeImage({ src, alt, className, fallbackName, onLoad, sizes }: 
                 Tentar Recarregar
             </button>
           </div>
-
         </div>
       ) : (
         <Image
@@ -66,11 +76,12 @@ export function SafeImage({ src, alt, className, fallbackName, onLoad, sizes }: 
           fill
           unoptimized={src.startsWith('http')} 
           decoding="async"
-          loading="lazy"
+          loading={priority ? undefined : "lazy"} // Priority remove o lazy loading automático do Next.js
+          priority={priority}
           sizes={sizes || "(max-width: 768px) 100vw, (max-width: 1200px) 33vw, 150px"}
           className={cn(
             "object-cover transition-opacity duration-300",
-            error ? "opacity-0" : "opacity-100"
+            loading ? "opacity-0" : "opacity-100"
           )}
           onLoad={() => {
             setLoading(false);
@@ -82,7 +93,6 @@ export function SafeImage({ src, alt, className, fallbackName, onLoad, sizes }: 
             setLoading(false);
           }}
         />
-
       )}
     </div>
   );

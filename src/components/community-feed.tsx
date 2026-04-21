@@ -34,7 +34,7 @@ export function CommunityFeed() {
         .from('community_feed')
         .select('*')
         .order('created_at', { ascending: false })
-        .limit(20);
+        .limit(10);
 
       if (error) throw error;
       setItems(data || []);

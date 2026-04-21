@@ -74,7 +74,6 @@ export function SafeImage({
           src={src}
           alt={alt}
           fill
-          unoptimized={src.startsWith('http')} 
           decoding="async"
           loading={priority ? undefined : "lazy"} // Priority remove o lazy loading automático do Next.js
           priority={priority}

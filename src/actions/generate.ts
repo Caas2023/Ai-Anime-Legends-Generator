@@ -143,7 +143,7 @@ export async function generateImage(
           .from("gallery")
           .upload(fileName, buffer, {
             contentType: "image/jpeg",
-            cacheControl: "3600",
+            cacheControl: "36000",
           });
 
         if (!uploadError) {
